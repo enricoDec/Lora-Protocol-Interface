@@ -1,0 +1,49 @@
+* {
+    -color-primary: #212529;
+    -color-secondary: #343A40;
+    -color-tertiary: #495057;
+    -color-quaternary: #6C757D;
+}
+
+.background-color-primary {
+    -fx-background-color: -color-primary !important;
+}
+.background-color-secondary{
+    -fx-background-color: -color-secondary !important;
+}
+.background-color-tertiary {
+    -fx-background-color: -color-tertiary !important;
+}
+.background-color-quaternary {
+    -fx-background-color: -color-quaternary !important;
+}
+
+.no-focus {
+    -jfx-disable-visual-focus: true;
+}
+
+.search-bar {
+    -fx-text-inner-color: #ffffff;
+    -fx-prompt-text-fill: #ffffff;
+}
+
+.transparent-background {
+    -fx-background-color: rgba(0, 0, 0, 0);
+}
+
+.radius {
+    -fx-background-radius: 100px;
+}
+
+.scroll-pane {
+    -fx-border-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.cmd-field {
+    -fx-text-inner-color: #ffffff;
+    -fx-prompt-text-fill: #ffffff;
+}
