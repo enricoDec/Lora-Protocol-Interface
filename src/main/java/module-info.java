@@ -9,6 +9,8 @@ module LoraProtocolInterface {
     // Icons
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.ikonli.bootstrapicons;
+    // Serial Comm
+    requires com.fazecast.jSerialComm;
 
     exports htw.ai;
     opens htw.ai to javafx.graphics, javafx.fxml;

@@ -4,14 +4,19 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXToggleButton;
+import htw.ai.lora.LoraDiscovery;
+import htw.ai.lora.LoraUARTController;
+import htw.ai.lora.config.Config;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+
+import java.io.IOException;
 
 /**
  * @author : Enrico Gamil Toros de Chadarevian
@@ -21,6 +26,9 @@ import javafx.scene.input.MouseEvent;
  **/
 public class ChatsController {
     private int pressed = 0;
+    private LoraDiscovery loraDiscovery;
+    private LoraUARTController loraUARTController;
+
     @FXML
     JFXButton btnChat;
     @FXML
@@ -47,6 +55,25 @@ public class ChatsController {
         chatsList.setFocusTraversable(false);
     }
 
+    public void start(){
+        Config config = new Config();
+        try {
+            config.readConfig();
+            writeToLog("Config read successfully.");
+            writeToLog(config.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        loraDiscovery = new LoraDiscovery();
+        loraUARTController = new LoraUARTController(config, this, loraDiscovery);
+        loraUARTController.start();
+    }
+
+    public void stop() {
+        loraUARTController.setStop(true);
+    }
+
     public void chatButtonClicked(MouseEvent mouseEvent) {
     }
 
@@ -59,10 +86,10 @@ public class ChatsController {
     public void powerToggleClicked(MouseEvent mouseEvent) {
         if (powerToggleButton.isSelected()) {
             powerToggleButton.setText("On");
-            // Start stuff
+            start();
         } else {
             powerToggleButton.setText("Off");
-            // Stop stuff
+            stop();
         }
     }
 
@@ -102,5 +129,13 @@ public class ChatsController {
 
     public void sendCmd(String cmd) {
         // TODO: Pass to controller
+    }
+
+    public void writeToLog(String message, Color color) {
+        System.out.println(message);
+    }
+
+    public void writeToLog(String message) {
+        System.out.println(message);
     }
 }
