@@ -19,10 +19,10 @@
     </rowConstraints>
     <children>
         <!-- Side bar (left) -->
-        <VBox alignment="CENTER" styleClass="background-color-primary" stylesheets="@styles.css">
+        <VBox alignment="CENTER" styleClass="background-color-primary">
             <children>
                 <Pane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
-                <JFXButton fx:id="btnChat" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#chatButtonClicked" ripplerFill="WHITE" styleClass="no-focus" stylesheets="@styles.css" text="Button">
+                <JFXButton fx:id="btnChat" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#chatButtonClicked" ripplerFill="WHITE" styleClass="no-focus" text="Button">
                     <graphic>
                         <FontIcon fill="WHITE" iconLiteral="bi-chat-fill" iconSize="25" />
                     </graphic>
@@ -33,7 +33,7 @@
                         <Insets bottom="20.0" />
                     </VBox.margin>
                 </JFXButton>
-                <JFXButton fx:id="btnGroup" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#groupButtonClicked" ripplerFill="WHITE" styleClass="no-focus" stylesheets="@styles.css" text="Button">
+                <JFXButton fx:id="btnGroup" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#groupButtonClicked" ripplerFill="WHITE" styleClass="no-focus" text="Button">
                     <graphic>
                         <FontIcon fill="WHITE" iconLiteral="bi-people-fill" iconSize="25" />
                     </graphic>
@@ -45,7 +45,7 @@
                     </VBox.margin>
                 </JFXButton>
                 <Pane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
-                <JFXButton fx:id="btnSettings" alignment="TOP_LEFT" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#settingsButtonClicked" ripplerFill="WHITE" styleClass="no-focus" stylesheets="@styles.css" text="settings">
+                <JFXButton fx:id="btnSettings" alignment="TOP_LEFT" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#settingsButtonClicked" ripplerFill="WHITE" styleClass="no-focus" text="settings">
                     <graphic>
                         <FontIcon fill="WHITE" iconLiteral="bi-gear-fill" iconSize="25" />
                     </graphic>
@@ -62,14 +62,14 @@
         <VBox prefHeight="200.0" prefWidth="100.0" styleClass="background-color-secondary" GridPane.columnIndex="1">
             <children>
                 <!-- Search bar -->
-                <HBox alignment="CENTER" minHeight="35.0" prefHeight="35.0" prefWidth="175.0" stylesheets="@styles.css">
+                <HBox alignment="CENTER" minHeight="35.0" prefHeight="35.0" prefWidth="175.0">
                     <children>
                         <FontIcon iconColor="WHITE" iconLiteral="bi-search" iconSize="16">
                             <HBox.margin>
                                 <Insets right="5.0" />
                             </HBox.margin>
                         </FontIcon>
-                        <JFXTextField fx:id="searchBar" focusColor="#dee2e6" prefWidth="135.0" promptText="Search" stylesheets="@styles.css" unFocusColor="#495057">
+                        <JFXTextField fx:id="searchBar" focusColor="#dee2e6" prefWidth="135.0" promptText="Search" unFocusColor="#495057">
                             <HBox.margin>
                                 <Insets right="10.0" />
                             </HBox.margin>
@@ -89,13 +89,13 @@
                     </styleClass>
                 </HBox>
                 <!-- Search bar/Chats divider -->
-                <Pane maxHeight="5.0" minHeight="2.0" prefHeight="2.0" styleClass="background-color-primary" stylesheets="@styles.css">
+                <Pane maxHeight="5.0" minHeight="2.0" prefHeight="2.0" styleClass="background-color-primary">
                     <VBox.margin>
                         <Insets />
                     </VBox.margin>
                 </Pane>
                 <!-- Chat List View -->
-                <JFXListView fx:id="chatsList" prefWidth="138.0" stylesheets="@styles.css" VBox.vgrow="ALWAYS">
+                <JFXListView fx:id="chatsList" prefWidth="138.0" VBox.vgrow="ALWAYS">
                     <VBox.margin>
                         <Insets />
                     </VBox.margin>
@@ -110,9 +110,9 @@
         <VBox prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2">
             <children>
                 <!-- Top Chat Bar (Label) -->
-                <HBox alignment="CENTER_LEFT" minHeight="44.0" prefHeight="44.0" styleClass="background-color-secondary" stylesheets="@styles.css">
+                <HBox alignment="CENTER_LEFT" minHeight="44.0" prefHeight="44.0" styleClass="background-color-secondary">
                     <children>
-                        <Label fx:id="chatName" stylesheets="@styles.css" text="Chat Name" textFill="WHITE">
+                        <Label fx:id="chatName" text="Chat Name" textFill="WHITE">
                             <HBox.margin>
                                 <Insets left="12.0" />
                             </HBox.margin>
@@ -132,22 +132,25 @@
                     </VBox.margin>
                 </HBox>
                 <!-- Divider -->
-                <Pane maxHeight="5.0" minHeight="2.0" prefHeight="2.0" styleClass="background-color-primary" stylesheets="@styles.css">
+                <Pane maxHeight="5.0" minHeight="2.0" prefHeight="2.0" styleClass="background-color-primary">
                     <VBox.margin>
                         <Insets />
                     </VBox.margin>
                 </Pane>
                 <!-- Chat messages ScrollPane -->
-                <ScrollPane fx:id="chatScrollPane" prefHeight="200.0" prefWidth="200.0" stylesheets="@styles.css" VBox.vgrow="ALWAYS">
+                <ScrollPane fx:id="chatScrollPane" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                     <styleClass>
                         <String fx:value="chat" />
                         <String fx:value="background-color-tertiary" />
                     </styleClass>
+                    <content>
+                        <VBox fx:id="messageBox" alignment="CENTER" />
+                    </content>
                 </ScrollPane>
                 <!-- Bottom Chat Bar -->
-                <HBox alignment="CENTER_RIGHT" prefHeight="37.0" prefWidth="416.0" styleClass="background-color-quaternary" stylesheets="@styles.css">
+                <HBox alignment="CENTER_RIGHT" prefHeight="37.0" prefWidth="416.0" styleClass="background-color-quaternary">
                     <!-- Cmd Input -->
-                    <JFXTextField fx:id="cmdInputTextField" focusColor="#dee2e6" maxWidth="320.0" nodeOrientation="LEFT_TO_RIGHT" onKeyPressed="#cmdTextEnter" prefWidth="240.0" promptText="Type here" styleClass="cmd-field" stylesheets="@styles.css" unFocusColor="#495057">
+                    <JFXTextField fx:id="cmdInputTextField" focusColor="#dee2e6" maxWidth="320.0" nodeOrientation="LEFT_TO_RIGHT" onKeyPressed="#cmdTextEnter" prefWidth="240.0" promptText="Type here" styleClass="cmd-field" unFocusColor="#495057">
                         <HBox.margin>
                             <Insets bottom="6.0" left="10.0" top="6.0" />
                         </HBox.margin>
@@ -156,7 +159,7 @@
                         </opaqueInsets>
                     </JFXTextField>
                     <!--Cmd Button Send -->
-                    <JFXButton fx:id="btnSendCmd" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#buttonSendClicked" ripplerFill="WHITE" styleClass="no-focus" stylesheets="@styles.css" text="settings">
+                    <JFXButton fx:id="btnSendCmd" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#buttonSendClicked" ripplerFill="WHITE" styleClass="no-focus" text="settings">
                         <graphic>
                             <FontIcon fill="WHITE" iconLiteral="bi-check2-circle" iconSize="25" />
                         </graphic>

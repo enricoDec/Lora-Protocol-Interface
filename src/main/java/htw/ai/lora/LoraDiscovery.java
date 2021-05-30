@@ -1,5 +1,9 @@
 package htw.ai.lora;
 
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.ObservableList;
+
 import java.util.HashSet;
 
 /**
@@ -9,6 +13,7 @@ import java.util.HashSet;
  * @since : 20-05-2021
  **/
 public class LoraDiscovery {
+    private ListProperty<Message> messages = new SimpleListProperty<>();
     private HashSet<Integer> discoveryList = new HashSet<>();
 
     /**
@@ -27,5 +32,17 @@ public class LoraDiscovery {
      */
     public HashSet<Integer> getDiscoveryList() {
         return discoveryList;
+    }
+
+    public ObservableList<Message> getMessages() {
+        return messages.get();
+    }
+
+    public ListProperty<Message> messagesProperty() {
+        return messages;
+    }
+
+    public void addMessage(Message message) {
+        messages.add(message);
     }
 }

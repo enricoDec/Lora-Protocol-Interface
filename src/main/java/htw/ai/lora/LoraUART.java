@@ -7,7 +7,6 @@ import htw.ai.lora.config.Config;
 import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,7 +23,6 @@ public class LoraUART implements Runnable {
     private final Config config;
     private final LoraDiscovery loraDiscovery;
     private final SerialPort comPort;
-    private final LinkedList<Message> messages = new LinkedList<>();
     private BlockingQueue<String> writeQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> replyQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
@@ -131,7 +129,7 @@ public class LoraUART implements Runnable {
             else if (data.startsWith(Lora.LR.CODE)) {
                 ChatsController.writeToLog(data, Color.CYAN);
                 Message message = new Message(data);
-                messages.add(message);
+                loraDiscovery.addMessage(message);
                 loraDiscovery.addClientAddress(message.getSourceAddress());
             } // Unknown messages
             else {
@@ -174,16 +172,6 @@ public class LoraUART implements Runnable {
      */
     public BlockingQueue<String> getReplyQueue() {
         return replyQueue;
-    }
-
-    /**
-     * Get the received queue
-     * The message list contains all the data received from the lora that starts with "LR"
-     *
-     * @return reference to the received queue
-     */
-    public LinkedList<Message> getMessages() {
-        return messages;
     }
 
     /**

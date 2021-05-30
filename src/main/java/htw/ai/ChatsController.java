@@ -6,19 +6,30 @@ import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXToggleButton;
 import htw.ai.lora.LoraController;
 import htw.ai.lora.LoraDiscovery;
+import htw.ai.lora.Message;
 import htw.ai.lora.config.Config;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ListProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -36,6 +47,7 @@ public class ChatsController {
     private LoraController loraController;
     private BlockingQueue<String> userInputQueue;
     private BooleanProperty isRunning;
+    private ListProperty messages;
 
     @FXML
     JFXButton btnChat;
@@ -57,10 +69,14 @@ public class ChatsController {
     JFXTextField cmdInputTextField;
     @FXML
     JFXButton btnSendCmd;
+    @FXML
+    VBox messageBox;
 
 
     public void initialize() {
         chatsList.setFocusTraversable(false);
+        cmdInputTextField.setDisable(true);
+        btnSendCmd.setDisable(true);
     }
 
     public void start() {
@@ -93,9 +109,20 @@ public class ChatsController {
                         powerToggleButton.setText("Off");
                         powerToggleButton.setSelected(false);
                     }
+                    cmdInputTextField.setDisable(false);
+                    btnSendCmd.setDisable(false);
                 });
             }
         });
+
+        messages = loraDiscovery.messagesProperty();
+        messages.addListener(new ListChangeListener() {
+            @Override
+            public void onChanged(Change change) {
+                System.out.println("Message arrived");
+            }
+        });
+
     }
 
     public void stop() {
@@ -116,17 +143,16 @@ public class ChatsController {
             powerToggleButton.setText("On");
             powerToggleButton.setDisable(true);
             start();
-            powerToggleButton.setDisable(false);
         } else {
             powerToggleButton.setDisable(true);
             stop();
-            powerToggleButton.setDisable(false);
         }
+        powerToggleButton.setDisable(false);
     }
 
     public void cmdTextEnter(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER && !cmdInputTextField.getText().isEmpty()) {
-            String userInput = cmdInputTextField.getText();
+            String userInput = cmdInputTextField.getText().trim();
             cmdInputTextField.setText("");
             sendCmd(userInput);
         } else if (keyEvent.getCode() == KeyCode.ENTER) {
@@ -140,9 +166,8 @@ public class ChatsController {
 
     public void buttonSendClicked(MouseEvent mouseEvent) {
         if (!cmdInputTextField.getText().isEmpty()) {
-            String userInput = cmdInputTextField.getText();
+            String userInput = cmdInputTextField.getText().trim();
             cmdInputTextField.setText("");
-            // TODO: Validate Input length etc
             sendCmd(userInput);
         } else {
             pressed++;
@@ -161,8 +186,30 @@ public class ChatsController {
 
     public void sendCmd(String cmd) {
         try {
-            //TODO: If queue full main thread will wait, not sure how to avoid
+            //TODO: If queue full main thread will wait, not sure how to fix
             userInputQueue.put(cmd);
+
+            // Display message
+            Label message = new Label(cmd);
+            message.setAlignment(Pos.CENTER);
+            message.getStyleClass().add("user-message");
+            message.setAlignment(Pos.CENTER);
+            message.setWrapText(true);
+            message.setFont(new Font(14));
+
+            GridPane gridPane = new GridPane();
+            gridPane.setAlignment(Pos.CENTER);
+
+            gridPane.getColumnConstraints().add(new ColumnConstraints());
+            gridPane.getColumnConstraints().add(new ColumnConstraints());
+            gridPane.getRowConstraints().add(new RowConstraints());
+            gridPane.getColumnConstraints().get(0).setPercentWidth(50);
+            gridPane.getColumnConstraints().get(1).setPercentWidth(50);
+            gridPane.add(message, 1, 0);
+            GridPane.setHalignment(message, HPos.RIGHT);
+            gridPane.setPadding(new Insets(4, 4, 4, 4));
+
+            messageBox.getChildren().add(gridPane);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

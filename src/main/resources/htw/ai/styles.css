@@ -8,12 +8,15 @@
 .background-color-primary {
     -fx-background-color: -color-primary !important;
 }
-.background-color-secondary{
+
+.background-color-secondary {
     -fx-background-color: -color-secondary !important;
 }
+
 .background-color-tertiary {
     -fx-background-color: -color-tertiary !important;
 }
+
 .background-color-quaternary {
     -fx-background-color: -color-quaternary !important;
 }
@@ -46,4 +49,11 @@
 .cmd-field {
     -fx-text-inner-color: #ffffff;
     -fx-prompt-text-fill: #ffffff;
+}
+
+.user-message {
+    -fx-padding: 5;
+    -fx-background-color: #50c984;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 20px;
 }
