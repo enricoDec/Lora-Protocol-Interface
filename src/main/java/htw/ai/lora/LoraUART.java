@@ -6,6 +6,7 @@ import htw.ai.lora.config.Config;
 import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -53,7 +54,7 @@ public class LoraUART implements Runnable {
      * Stop the thread
      */
     void stop() {
-        if (running.get())
+        if (!running.get())
             ChatsController.writeToLog("LoraUART already stopped!");
         else
             running.set(false);
@@ -105,19 +106,21 @@ public class LoraUART implements Runnable {
         // Check if any bytes are available to be read else close port and check if new data available to be written
         if (comPort.bytesAvailable() > 0) {
             // Keep reading until EOF is reached
-            while (!data.contains(Lora.EOF.getCODE())) {
+            while (!data.contains(Lora.EOF.CODE)) {
                 byteData = new byte[comPort.bytesAvailable()];
                 comPort.readBytes(byteData, byteData.length);
                 data = data.concat(new String(byteData, StandardCharsets.US_ASCII));
             }
             // Split reply codes from incoming messages
             // Reply codes
-            if (data.startsWith(Lora.AT.getCODE())) {
+            // Remove EOF
+            data = data.substring(0, data.length() - 2);
+            if (data.startsWith(Lora.AT.CODE)) {
                 ChatsController.writeToLog(data, Color.YELLOW);
                 replyQueue.put(data);
             }
             // Incoming messages
-            else if (data.startsWith(Lora.LR.getCODE())) {
+            else if (data.startsWith(Lora.LR.CODE)) {
                 ChatsController.writeToLog(data, Color.CYAN);
                 Message message = new Message(data);
                 messages.add(message);
@@ -136,7 +139,7 @@ public class LoraUART implements Runnable {
      * @param data Data to be send. <b>Has to be UTF-8 encoded without new line or carriage return.</b>
      */
     private synchronized void write(String data) {
-        byte[] dataWithEOF = (data + Lora.EOF.getCODE()).getBytes(StandardCharsets.UTF_8);
+        byte[] dataWithEOF = (data + Lora.EOF.CODE).getBytes(StandardCharsets.UTF_8);
 
         // Not really sure about timeout
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);

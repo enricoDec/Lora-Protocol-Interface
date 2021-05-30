@@ -46,7 +46,7 @@ public class RandomHello implements Runnable {
             try {
                 BlockingQueue<String> writeQueue = loraUART.getWriteQueue();
                 BlockingQueue<String> replyCode = loraUART.getReplyQueue();
-                writeQueue.put(Lora.AT_SEND.getCODE() + "5");
+                writeQueue.put(Lora.AT_SEND.CODE + "5");
                 replyCode.take();
                 writeQueue.put("Hello");
                 replyCode.take();

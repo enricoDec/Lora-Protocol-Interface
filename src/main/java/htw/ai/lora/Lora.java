@@ -1,8 +1,6 @@
 package htw.ai.lora;
 
-
 import htw.ai.ChatsController;
-import javafx.scene.paint.Color;
 
 /**
  * @author : Enrico Gamil Toros de Chadarevian
@@ -53,13 +51,19 @@ public enum Lora {
     /**
      * String representation of lora codes
      */
-    private final String CODE;
+    public final String CODE;
 
     Lora(String CODE) {
         this.CODE = CODE;
     }
 
-    public String getCODE() {
-        return CODE;
+    public static Lora valueOfCode(String code) {
+        for (Lora e : values()) {
+            if (e.CODE.equals(code)) {
+                return e;
+            }
+        }
+        ChatsController.writeToLog("Unknown Code: " + code);
+        return Lora.UNKNOWN;
     }
 }

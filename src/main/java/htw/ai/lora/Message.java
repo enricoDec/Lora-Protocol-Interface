@@ -24,7 +24,7 @@ public class Message {
      * Split data to source address and actual message
      */
     private void interpret() {
-        String[] dataSplit = data.split(Lora.DIVIDER.getCODE());
+        String[] dataSplit = data.split(Lora.DIVIDER.CODE);
         // 0-> LR 1-> source address 2-> bytes number 3-> data
         sourceAddress = Integer.parseInt(dataSplit[1]);
         data = dataSplit[3];

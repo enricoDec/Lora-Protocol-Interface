@@ -99,18 +99,18 @@ public class Config {
      */
     public String getConfiguration() {
         final StringBuffer sb = new StringBuffer();
-        sb.append(carrierFrequency).append(Lora.DIVIDER.getCODE());
-        sb.append(power).append(Lora.DIVIDER.getCODE());
-        sb.append(modulationBandwidth).append(Lora.DIVIDER.getCODE());
-        sb.append(spreadingFactor).append(Lora.DIVIDER.getCODE());
-        sb.append(errorCoding).append(Lora.DIVIDER.getCODE());
-        sb.append(crc).append(Lora.DIVIDER.getCODE());
-        sb.append(implicitHeaderOn).append(Lora.DIVIDER.getCODE());
-        sb.append(rxSingleOn).append(Lora.DIVIDER.getCODE());
-        sb.append(frequencyHopOn).append(Lora.DIVIDER.getCODE());
-        sb.append(hopPeriod).append(Lora.DIVIDER.getCODE());
-        sb.append(rxPacketTimeout).append(Lora.DIVIDER.getCODE());
-        sb.append(payloadLength).append(Lora.DIVIDER.getCODE());
+        sb.append(carrierFrequency).append(Lora.DIVIDER.CODE);
+        sb.append(power).append(Lora.DIVIDER.CODE);
+        sb.append(modulationBandwidth).append(Lora.DIVIDER.CODE);
+        sb.append(spreadingFactor).append(Lora.DIVIDER.CODE);
+        sb.append(errorCoding).append(Lora.DIVIDER.CODE);
+        sb.append(crc).append(Lora.DIVIDER.CODE);
+        sb.append(implicitHeaderOn).append(Lora.DIVIDER.CODE);
+        sb.append(rxSingleOn).append(Lora.DIVIDER.CODE);
+        sb.append(frequencyHopOn).append(Lora.DIVIDER.CODE);
+        sb.append(hopPeriod).append(Lora.DIVIDER.CODE);
+        sb.append(rxPacketTimeout).append(Lora.DIVIDER.CODE);
+        sb.append(payloadLength).append(Lora.DIVIDER.CODE);
         sb.append(preambleLength);
         return sb.toString();
     }

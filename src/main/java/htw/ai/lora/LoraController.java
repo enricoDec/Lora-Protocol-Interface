@@ -2,7 +2,6 @@ package htw.ai.lora;
 
 import htw.ai.ChatsController;
 import htw.ai.lora.config.Config;
-import javafx.scene.paint.Color;
 
 
 import java.nio.charset.StandardCharsets;
@@ -31,7 +30,7 @@ public class LoraController implements Runnable {
     private BlockingQueue<String> replyQueue;
     // Queue containing any other data (Not AT or LR)
     private BlockingQueue<String> unknownQueue;
-    private int timeoutInMillis = 2000;
+    private int timeoutInMillis = 5000;
     private AtomicBoolean running = new AtomicBoolean(false);
 
     public LoraController(Config config, BlockingQueue<String> userInputQueue, LoraDiscovery loraDiscovery) {
@@ -105,20 +104,21 @@ public class LoraController implements Runnable {
                     }
 
                     // If no AT command -> AT+SEND
-                    if (!dataToSend.startsWith(Lora.AT.getCODE())) {
+                    if (!dataToSend.startsWith(Lora.AT.CODE)) {
                         // Get number of bytes to send
                         int bytesToSend = dataToSend.strip().length();
                         try {
                             // Send AT+SEND=bytesToSend
-                            writeQueue.put(Lora.AT_SEND.getCODE() + bytesToSend);
+                            writeQueue.put(Lora.AT_SEND.CODE + bytesToSend);
                             // Check reply code
-                            replyCode = Lora.valueOf(replyQueue.take());
+                            replyCode = Lora.valueOfCode(replyQueue.take());
                             checkReplyCode(Lora.AT_SEND, replyCode, Lora.REPLY_OK);
+                            writeQueue.put(dataToSend.strip());
                             loraState = LoraState.SENDING;
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                    } else if (dataToSend.startsWith(Lora.AT.getCODE())) {
+                    } else if (dataToSend.startsWith(Lora.AT.CODE)) {
                         try {
                             writeQueue.put(dataToSend);
                         } catch (InterruptedException e) {
@@ -134,15 +134,15 @@ public class LoraController implements Runnable {
                     // Wait for reply from serial comm
                     replyCode = Lora.UNKNOWN;
                     try {
-                        replyCode = Lora.valueOf(replyQueue.take());
+                        replyCode = Lora.valueOfCode(replyQueue.take());
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
 
-                    if (replyCode.getCODE().startsWith(Lora.ERR_GENERAL.getCODE())) {
-                        ChatsController.writeToLog("Error " + replyCode.getCODE());
+                    if (replyCode.CODE.startsWith(Lora.ERR_GENERAL.CODE)) {
+                        ChatsController.writeToLog("Error " + replyCode.CODE);
                     } else {
-                        ChatsController.writeToLog(replyCode.getCODE());
+                        ChatsController.writeToLog(replyCode.CODE);
                     }
                     loraState = LoraState.USER_INPUT;
                     break;
@@ -150,7 +150,7 @@ public class LoraController implements Runnable {
                     // wait for reply from serial comm
                     boolean equals = false;
                     try {
-                        replyCode = Lora.valueOf(replyQueue.take());
+                        replyCode = Lora.valueOfCode(replyQueue.take());
                         equals = checkReplyCode(Lora.AT_SEND, replyCode, Lora.REPLY_SENDING);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -167,7 +167,7 @@ public class LoraController implements Runnable {
                     // wait for reply from serial comm
                     boolean equal = false;
                     try {
-                        replyCode = Lora.valueOf(replyQueue.take());
+                        replyCode = Lora.valueOfCode(replyQueue.take());
                         equal = checkReplyCode(Lora.AT_SEND, replyCode, Lora.REPLY_SENDED);
                         loraState = LoraState.USER_INPUT;
                     } catch (InterruptedException e) {
@@ -215,7 +215,7 @@ public class LoraController implements Runnable {
      */
     private void atRST() throws InterruptedException {
         // Send AT+RST to Lora
-        String reset = Lora.AT_RST.getCODE();
+        String reset = Lora.AT_RST.CODE;
         ChatsController.writeToLog(reset);
         writeQueue.put(reset);
         // Wait for reply with timeout
@@ -225,12 +225,11 @@ public class LoraController implements Runnable {
             atRST();
         }
 
-        boolean reply = checkReplyCode(Lora.AT_RST, Lora.valueOf(replyCode), Lora.REPLY_OK);
-        // Model we user does not follow protocol and replies with model and vendor after AT,OK
-        if (reply)
+        if (checkReplyCode(Lora.AT_RST, Lora.valueOfCode(replyCode), Lora.REPLY_OK)) {
+            // Himalaya Vendor etc..
             unknownQueue.take();
-        else {
-            replyQueue.take();
+        } else {
+            // TODO: Handle error
         }
     }
 
@@ -240,10 +239,10 @@ public class LoraController implements Runnable {
      * @throws InterruptedException Thrown when a thread is waiting, sleeping, or otherwise occupied, and the thread is interrupted.
      */
     private void atSetAddr() throws InterruptedException {
-        String setAddr = Lora.AT_ADDR_SET.getCODE() + config.getAddress();
+        String setAddr = Lora.AT_ADDR_SET.CODE + config.getAddress();
         ChatsController.writeToLog(setAddr);
         writeQueue.put(setAddr);
-        checkReplyCode(Lora.AT_ADDR_SET, Lora.valueOf(replyQueue.take()), Lora.REPLY_OK);
+        checkReplyCode(Lora.AT_ADDR_SET, Lora.valueOfCode(replyQueue.take()), Lora.REPLY_OK);
     }
 
     /**
@@ -252,10 +251,10 @@ public class LoraController implements Runnable {
      * @throws InterruptedException Thrown when a thread is waiting, sleeping, or otherwise occupied, and the thread is interrupted.
      */
     private void atConfig() throws InterruptedException {
-        String setCfg = Lora.AT_CFG.getCODE() + config.getConfiguration();
+        String setCfg = Lora.AT_CFG.CODE + config.getConfiguration();
         ChatsController.writeToLog(setCfg);
         writeQueue.put(setCfg);
-        checkReplyCode(Lora.AT_CFG, Lora.valueOf(replyQueue.take()), Lora.REPLY_OK);
+        checkReplyCode(Lora.AT_CFG, Lora.valueOfCode(replyQueue.take()), Lora.REPLY_OK);
     }
 
     /**
@@ -264,7 +263,7 @@ public class LoraController implements Runnable {
      * @throws InterruptedException Thrown when a thread is waiting, sleeping, or otherwise occupied, and the thread is interrupted.
      */
     private void atGetVersion() throws InterruptedException {
-        String getVersion = Lora.AT_VER.getCODE();
+        String getVersion = Lora.AT_VER.CODE;
         ChatsController.writeToLog(getVersion);
         writeQueue.put(getVersion);
         replyQueue.take();
@@ -298,7 +297,6 @@ public class LoraController implements Runnable {
     private boolean checkReplyCode(Lora cmd, Lora actualReplyCode, Lora expectedReplyCode) {
         boolean equals = true;
         if (!actualReplyCode.equals(expectedReplyCode)) {
-            ChatsController.writeToLog("Unexpected return code after " + cmd.getCODE() + ": " + actualReplyCode, Color.DARKRED);
             equals = false;
         }
         return equals;
