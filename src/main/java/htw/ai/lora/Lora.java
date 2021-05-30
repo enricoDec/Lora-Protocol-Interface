@@ -1,6 +1,9 @@
 package htw.ai.lora;
 
 
+import htw.ai.ChatsController;
+import javafx.scene.paint.Color;
+
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : Lora-Protocol

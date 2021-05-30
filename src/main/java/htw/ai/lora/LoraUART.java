@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -17,19 +18,18 @@ import java.util.concurrent.BlockingQueue;
  * @version : 1.0
  * @since : 14-05-2021
  **/
-public class LoraUARTController implements Runnable {
-    private boolean stop = false;
+public class LoraUART implements Runnable {
+    private AtomicBoolean running = new AtomicBoolean(false);
     private final Config config;
     private final LoraDiscovery loraDiscovery;
     private final SerialPort comPort;
     private final LinkedList<Message> messages = new LinkedList<>();
-    private final ChatsController chatsController;
     private BlockingQueue<String> writeQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> replyQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
 
 
-    public LoraUARTController(Config config, ChatsController chatsController, LoraDiscovery loraDiscovery) {
+    LoraUART(Config config, LoraDiscovery loraDiscovery) {
         comPort = SerialPort.getCommPort(config.getPort());
         comPort.setBaudRate(config.getBaudRate());
         comPort.setParity(config.getParity());
@@ -38,31 +38,39 @@ public class LoraUARTController implements Runnable {
         comPort.setNumDataBits(config.getNumberOfDataBits());
 
         this.config = config;
-        this.chatsController = chatsController;
         this.loraDiscovery = loraDiscovery;
+        start();
+    }
+
+    void start() {
+        if (running.get())
+            ChatsController.writeToLog("LoraUART already running!");
+        else
+            running.set(true);
     }
 
     /**
-     * Start Lora UART thread
+     * Stop the thread
      */
-    public void start() {
-        Thread t1 = new Thread(this, "LoraAPI_Thread");
-        t1.start();
+    void stop() {
+        if (running.get())
+            ChatsController.writeToLog("LoraUART already stopped!");
+        else
+            running.set(false);
     }
 
     @Override
     public void run() {
-        // Important only one thread should be running at any time
-
+        // Important only one thread per port should be running at any time
         // Thread constantly checks if new data is available at Serial Port
         // Only if new data needs to be written to Serial Port it will switch to write
         if (!comPort.openPort()) {
-            chatsController.writeToLog("Could not open port " + config.getPort() + " !", Color.DARKRED);
-            chatsController.writeToLog("Wrong port or blocked by other process.", Color.DARKRED);
+            ChatsController.writeToLog("Could not open port " + config.getPort() + " !", Color.DARKRED);
+            ChatsController.writeToLog("Wrong port or blocked by other process.", Color.DARKRED);
             System.exit(-1);
         }
 
-        while (!stop) {
+        while (running.get()) {
             // If no data to be written continue to poll Serial Port
             if (writeQueue.isEmpty()) {
                 try {
@@ -82,7 +90,6 @@ public class LoraUARTController implements Runnable {
                 write(dataToWrite);
             }
         }
-        System.out.println("UART Thread dead.");
     }
 
     /**
@@ -106,18 +113,18 @@ public class LoraUARTController implements Runnable {
             // Split reply codes from incoming messages
             // Reply codes
             if (data.startsWith(Lora.AT.getCODE())) {
-                chatsController.writeToLog(data, Color.YELLOW);
+                ChatsController.writeToLog(data, Color.YELLOW);
                 replyQueue.put(data);
             }
             // Incoming messages
             else if (data.startsWith(Lora.LR.getCODE())) {
-                chatsController.writeToLog("\r 📲 " + data, Color.CYAN);
+                ChatsController.writeToLog(data, Color.CYAN);
                 Message message = new Message(data);
                 messages.add(message);
                 loraDiscovery.addClientAddress(message.getSourceAddress());
             } // Unknown messages
             else {
-                chatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);
+                ChatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);
                 unknownQueue.put(data);
             }
         }
@@ -134,15 +141,6 @@ public class LoraUARTController implements Runnable {
         // Not really sure about timeout
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         comPort.writeBytes(dataWithEOF, dataWithEOF.length);
-    }
-
-    /**
-     * Stop the thread
-     *
-     * @param stop true to stop the thread
-     */
-    public void setStop(boolean stop) {
-        this.stop = stop;
     }
 
     /**
@@ -188,20 +186,12 @@ public class LoraUARTController implements Runnable {
         return unknownQueue;
     }
 
-
+    /**
+     * Get the com Port
+     *
+     * @return comPort
+     */
     public SerialPort getComPort() {
         return comPort;
-    }
-
-    public Config getConfig() {
-        return config;
-    }
-
-    public ChatsController getChatsController() {
-        return chatsController;
-    }
-
-    public LoraDiscovery getLoraDiscovery() {
-        return loraDiscovery;
     }
 }

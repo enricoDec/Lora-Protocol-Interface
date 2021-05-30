@@ -10,11 +10,11 @@ import java.util.concurrent.ThreadLocalRandom;
  * @since : 20-05-2021
  **/
 public class RandomHello implements Runnable {
-    private LoraUARTController loraUARTController;
+    private LoraUART loraUART;
     private boolean stop = false;
 
-    public RandomHello(LoraUARTController loraUARTController) {
-        this.loraUARTController = loraUARTController;
+    public RandomHello(LoraUART loraUART) {
+        this.loraUART = loraUART;
     }
 
     public void start() {
@@ -29,7 +29,7 @@ public class RandomHello implements Runnable {
 
     public void stop() {
         stop = true;
-        loraUARTController.getReplyQueue().clear();
+        loraUART.getReplyQueue().clear();
     }
 
     private void sendRandomHello() {
@@ -44,8 +44,8 @@ public class RandomHello implements Runnable {
             }
 
             try {
-                BlockingQueue<String> writeQueue = loraUARTController.getWriteQueue();
-                BlockingQueue<String> replyCode = loraUARTController.getReplyQueue();
+                BlockingQueue<String> writeQueue = loraUART.getWriteQueue();
+                BlockingQueue<String> replyCode = loraUART.getReplyQueue();
                 writeQueue.put(Lora.AT_SEND.getCODE() + "5");
                 replyCode.take();
                 writeQueue.put("Hello");
