@@ -7,6 +7,10 @@ import com.jfoenix.controls.JFXToggleButton;
 import htw.ai.lora.LoraController;
 import htw.ai.lora.LoraDiscovery;
 import htw.ai.lora.config.Config;
+import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
@@ -31,6 +35,7 @@ public class ChatsController {
     private LoraDiscovery loraDiscovery;
     private LoraController loraController;
     private BlockingQueue<String> userInputQueue;
+    private BooleanProperty isRunning;
 
     @FXML
     JFXButton btnChat;
@@ -58,7 +63,7 @@ public class ChatsController {
         chatsList.setFocusTraversable(false);
     }
 
-    public void start(){
+    public void start() {
         userInputQueue = new ArrayBlockingQueue<>(20);
 
         // Read Config
@@ -75,6 +80,22 @@ public class ChatsController {
         loraController = new LoraController(config, userInputQueue, loraDiscovery);
         Thread lora_thread = new Thread(loraController, "Lora_Thread");
         lora_thread.start();
+
+        isRunning = loraController.runningProperty();
+        isRunning.addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue, Boolean newValue) {
+                Platform.runLater(() -> {
+                    if (newValue) {
+                        powerToggleButton.setText("On");
+                        powerToggleButton.setSelected(true);
+                    } else {
+                        powerToggleButton.setText("Off");
+                        powerToggleButton.setSelected(false);
+                    }
+                });
+            }
+        });
     }
 
     public void stop() {
@@ -93,10 +114,13 @@ public class ChatsController {
     public void powerToggleClicked(MouseEvent mouseEvent) {
         if (powerToggleButton.isSelected()) {
             powerToggleButton.setText("On");
+            powerToggleButton.setDisable(true);
             start();
+            powerToggleButton.setDisable(false);
         } else {
-            powerToggleButton.setText("Off");
+            powerToggleButton.setDisable(true);
             stop();
+            powerToggleButton.setDisable(false);
         }
     }
 
@@ -105,10 +129,10 @@ public class ChatsController {
             String userInput = cmdInputTextField.getText();
             cmdInputTextField.setText("");
             sendCmd(userInput);
-        } else if(keyEvent.getCode() == KeyCode.ENTER) {
+        } else if (keyEvent.getCode() == KeyCode.ENTER) {
             pressed++;
             if (pressed > 20) {
-                alert("Hey Stop ಠ_ಠ", Alert.AlertType.WARNING);
+                alert("Hey Stop (ㆆ_ㆆ)", Alert.AlertType.WARNING);
                 pressed = 0;
             }
         }
@@ -123,7 +147,7 @@ public class ChatsController {
         } else {
             pressed++;
             if (pressed > 20) {
-                alert("Hey Stop ಠ_ಠ", Alert.AlertType.WARNING);
+                alert("Hey Stop (ㆆ_ㆆ)", Alert.AlertType.WARNING);
                 pressed = 0;
             }
         }

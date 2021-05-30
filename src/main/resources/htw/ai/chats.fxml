@@ -8,59 +8,52 @@
 <?import javafx.scene.text.*?>
 <?import org.kordamp.ikonli.javafx.*?>
 
-<GridPane prefHeight="360.0" prefWidth="640.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/11.0.1"
-          xmlns:fx="http://javafx.com/fxml/1" fx:controller="htw.ai.ChatsController">
+<GridPane prefHeight="360.0" prefWidth="640.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="htw.ai.ChatsController">
     <columnConstraints>
-        <ColumnConstraints hgrow="SOMETIMES" maxWidth="40.0" minWidth="30.0" prefWidth="35.0"/>
-        <ColumnConstraints hgrow="SOMETIMES" maxWidth="220.0" minWidth="160.0" prefWidth="160.0"/>
-        <ColumnConstraints hgrow="SOMETIMES" maxWidth="Infinity" minWidth="10.0" prefWidth="392.0"/>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="40.0" minWidth="30.0" prefWidth="35.0" />
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="220.0" minWidth="160.0" prefWidth="160.0" />
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="Infinity" minWidth="10.0" prefWidth="392.0" />
     </columnConstraints>
     <rowConstraints>
-        <RowConstraints minHeight="10.0" vgrow="ALWAYS"/>
+        <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
     </rowConstraints>
     <children>
         <!-- Side bar (left) -->
         <VBox alignment="CENTER" styleClass="background-color-primary" stylesheets="@styles.css">
             <children>
-                <Pane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS"/>
-                <JFXButton fx:id="btnChat" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0"
-                           onMouseClicked="#chatButtonClicked" ripplerFill="WHITE" styleClass="no-focus"
-                           stylesheets="@styles.css" text="Button">
+                <Pane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                <JFXButton fx:id="btnChat" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#chatButtonClicked" ripplerFill="WHITE" styleClass="no-focus" stylesheets="@styles.css" text="Button">
                     <graphic>
-                        <FontIcon fill="WHITE" iconLiteral="bi-chat-fill" iconSize="25"/>
+                        <FontIcon fill="WHITE" iconLiteral="bi-chat-fill" iconSize="25" />
                     </graphic>
                     <font>
-                        <Font size="1.0"/>
+                        <Font size="1.0" />
                     </font>
                     <VBox.margin>
-                        <Insets bottom="20.0"/>
+                        <Insets bottom="20.0" />
                     </VBox.margin>
                 </JFXButton>
-                <JFXButton fx:id="btnGroup" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0"
-                           onMouseClicked="#groupButtonClicked" ripplerFill="WHITE" styleClass="no-focus"
-                           stylesheets="@styles.css" text="Button">
+                <JFXButton fx:id="btnGroup" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#groupButtonClicked" ripplerFill="WHITE" styleClass="no-focus" stylesheets="@styles.css" text="Button">
                     <graphic>
-                        <FontIcon fill="WHITE" iconLiteral="bi-people-fill" iconSize="25"/>
+                        <FontIcon fill="WHITE" iconLiteral="bi-people-fill" iconSize="25" />
                     </graphic>
                     <font>
-                        <Font size="1.0"/>
+                        <Font size="1.0" />
                     </font>
                     <VBox.margin>
-                        <Insets/>
+                        <Insets />
                     </VBox.margin>
                 </JFXButton>
-                <Pane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS"/>
-                <JFXButton fx:id="btnSettings" alignment="TOP_LEFT" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0"
-                           onMouseClicked="#settingsButtonClicked" ripplerFill="WHITE" styleClass="no-focus"
-                           stylesheets="@styles.css" text="settings">
+                <Pane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                <JFXButton fx:id="btnSettings" alignment="TOP_LEFT" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#settingsButtonClicked" ripplerFill="WHITE" styleClass="no-focus" stylesheets="@styles.css" text="settings">
                     <graphic>
-                        <FontIcon fill="WHITE" iconLiteral="bi-gear-fill" iconSize="25"/>
+                        <FontIcon fill="WHITE" iconLiteral="bi-gear-fill" iconSize="25" />
                     </graphic>
                     <font>
-                        <Font size="1.0"/>
+                        <Font size="1.0" />
                     </font>
                     <VBox.margin>
-                        <Insets bottom="15.0"/>
+                        <Insets bottom="15.0" />
                     </VBox.margin>
                 </JFXButton>
             </children>
@@ -73,45 +66,42 @@
                     <children>
                         <FontIcon iconColor="WHITE" iconLiteral="bi-search" iconSize="16">
                             <HBox.margin>
-                                <Insets right="5.0"/>
+                                <Insets right="5.0" />
                             </HBox.margin>
                         </FontIcon>
-                        <JFXTextField fx:id="searchBar" focusColor="#dee2e6" prefWidth="135.0" promptText="Search"
-                                      stylesheets="@styles.css"
-                                      unFocusColor="#495057">
+                        <JFXTextField fx:id="searchBar" focusColor="#dee2e6" prefWidth="135.0" promptText="Search" stylesheets="@styles.css" unFocusColor="#495057">
                             <HBox.margin>
-                                <Insets right="10.0"/>
+                                <Insets right="10.0" />
                             </HBox.margin>
                             <styleClass>
-                                <String fx:value="search-bar"/>
-                                <String fx:value="transparent-background"/>
-                                <String fx:value="no-focus"/>
+                                <String fx:value="search-bar" />
+                                <String fx:value="transparent-background" />
+                                <String fx:value="no-focus" />
                             </styleClass>
                         </JFXTextField>
                     </children>
                     <VBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="4.0"/>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="4.0" />
                     </VBox.margin>
                     <styleClass>
-                        <String fx:value="background-color-primary"/>
-                        <String fx:value="radius"/>
+                        <String fx:value="background-color-primary" />
+                        <String fx:value="radius" />
                     </styleClass>
                 </HBox>
                 <!-- Search bar/Chats divider -->
-                <Pane maxHeight="5.0" minHeight="2.0" prefHeight="2.0" styleClass="background-color-primary"
-                      stylesheets="@styles.css">
+                <Pane maxHeight="5.0" minHeight="2.0" prefHeight="2.0" styleClass="background-color-primary" stylesheets="@styles.css">
                     <VBox.margin>
-                        <Insets/>
+                        <Insets />
                     </VBox.margin>
                 </Pane>
                 <!-- Chat List View -->
                 <JFXListView fx:id="chatsList" prefWidth="138.0" stylesheets="@styles.css" VBox.vgrow="ALWAYS">
                     <VBox.margin>
-                        <Insets/>
+                        <Insets />
                     </VBox.margin>
                     <styleClass>
-                        <String fx:value="no-focus"/>
-                        <String fx:value="background-color-secondary"/>
+                        <String fx:value="no-focus" />
+                        <String fx:value="background-color-secondary" />
                     </styleClass>
                 </JFXListView>
             </children>
@@ -120,75 +110,64 @@
         <VBox prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="2">
             <children>
                 <!-- Top Chat Bar (Label) -->
-                <HBox alignment="CENTER_LEFT" minHeight="44.0" prefHeight="44.0" styleClass="background-color-secondary"
-                      stylesheets="@styles.css">
+                <HBox alignment="CENTER_LEFT" minHeight="44.0" prefHeight="44.0" styleClass="background-color-secondary" stylesheets="@styles.css">
                     <children>
                         <Label fx:id="chatName" stylesheets="@styles.css" text="Chat Name" textFill="WHITE">
                             <HBox.margin>
-                                <Insets left="12.0"/>
+                                <Insets left="12.0" />
                             </HBox.margin>
                             <font>
-                                <Font name="System Bold" size="12.0"/>
+                                <Font name="System Bold" size="12.0" />
                             </font>
                         </Label>
-                        <Pane prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS"/>
-                        <JFXToggleButton fx:id="powerToggleButton" mnemonicParsing="false"
-                                         onMouseClicked="#powerToggleClicked" size="8.0" text="Off"
-                                         textFill="WHITE" unToggleColor="#d32929" unToggleLineColor="#da5454">
+                        <Pane prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                        <JFXToggleButton fx:id="powerToggleButton" mnemonicParsing="false" onMouseClicked="#powerToggleClicked" size="8.0" text="Off" textFill="WHITE" unToggleColor="#d32929" unToggleLineColor="#da5454">
                             <HBox.margin>
-                                <Insets right="8.0"/>
+                                <Insets right="8.0" />
                             </HBox.margin>
                         </JFXToggleButton>
                     </children>
                     <VBox.margin>
-                        <Insets/>
+                        <Insets />
                     </VBox.margin>
                 </HBox>
                 <!-- Divider -->
-                <Pane maxHeight="5.0" minHeight="2.0" prefHeight="2.0" styleClass="background-color-primary"
-                      stylesheets="@styles.css">
+                <Pane maxHeight="5.0" minHeight="2.0" prefHeight="2.0" styleClass="background-color-primary" stylesheets="@styles.css">
                     <VBox.margin>
-                        <Insets/>
+                        <Insets />
                     </VBox.margin>
                 </Pane>
                 <!-- Chat messages ScrollPane -->
-                <ScrollPane fx:id="chatScrollPane" prefHeight="200.0" prefWidth="200.0" stylesheets="@styles.css"
-                            VBox.vgrow="ALWAYS">
+                <ScrollPane fx:id="chatScrollPane" prefHeight="200.0" prefWidth="200.0" stylesheets="@styles.css" VBox.vgrow="ALWAYS">
                     <styleClass>
-                        <String fx:value="chat"/>
-                        <String fx:value="background-color-tertiary"/>
+                        <String fx:value="chat" />
+                        <String fx:value="background-color-tertiary" />
                     </styleClass>
                 </ScrollPane>
                 <!-- Bottom Chat Bar -->
-                <HBox alignment="CENTER_RIGHT" prefHeight="37.0" prefWidth="416.0"
-                      styleClass="background-color-quaternary" stylesheets="@styles.css">
+                <HBox alignment="CENTER_RIGHT" prefHeight="37.0" prefWidth="416.0" styleClass="background-color-quaternary" stylesheets="@styles.css">
                     <!-- Cmd Input -->
-                    <JFXTextField fx:id="cmdInputTextField" focusColor="#dee2e6" maxWidth="320.0"
-                                  nodeOrientation="LEFT_TO_RIGHT" onKeyPressed="#cmdTextEnter"
-                                  prefWidth="240.0" promptText="Type here" styleClass="cmd-field"
-                                  stylesheets="@styles.css" unFocusColor="#495057">
+                    <JFXTextField fx:id="cmdInputTextField" focusColor="#dee2e6" maxWidth="320.0" nodeOrientation="LEFT_TO_RIGHT" onKeyPressed="#cmdTextEnter" prefWidth="240.0" promptText="Type here" styleClass="cmd-field" stylesheets="@styles.css" unFocusColor="#495057">
                         <HBox.margin>
-                            <Insets bottom="6.0" left="10.0" top="6.0"/>
+                            <Insets bottom="6.0" left="10.0" top="6.0" />
                         </HBox.margin>
                         <opaqueInsets>
-                            <Insets/>
+                            <Insets />
                         </opaqueInsets>
                     </JFXTextField>
                     <!--Cmd Button Send -->
-                    <JFXButton fx:id="btnSendCmd" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0"
-                               onMouseClicked="#buttonSendClicked"
-                               ripplerFill="WHITE" styleClass="no-focus" stylesheets="@styles.css" text="settings">
+                    <JFXButton fx:id="btnSendCmd" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#buttonSendClicked" ripplerFill="WHITE" styleClass="no-focus" stylesheets="@styles.css" text="settings">
                         <graphic>
-                            <FontIcon fill="WHITE" iconLiteral="bi-check2-circle" iconSize="25"/>
+                            <FontIcon fill="WHITE" iconLiteral="bi-check2-circle" iconSize="25" />
                         </graphic>
                         <font>
-                            <Font size="1.0"/>
+                            <Font size="1.0" />
                         </font>
                         <VBox.margin>
-                            <Insets bottom="15.0"/>
+                            <Insets bottom="15.0" />
                         </VBox.margin>
                         <HBox.margin>
-                            <Insets right="10.0"/>
+                            <Insets right="10.0" />
                         </HBox.margin>
                     </JFXButton>
                 </HBox>

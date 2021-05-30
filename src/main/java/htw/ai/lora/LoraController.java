@@ -2,13 +2,13 @@ package htw.ai.lora;
 
 import htw.ai.ChatsController;
 import htw.ai.lora.config.Config;
-
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author : Enrico Gamil Toros de Chadarevian
@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since : 15-05-2021
  **/
 public class LoraController implements Runnable {
+    // JavaFX
     private LoraState loraState;
     private LoraDiscovery loraDiscovery;
     Thread loraUART_thread;
@@ -30,8 +31,7 @@ public class LoraController implements Runnable {
     private BlockingQueue<String> replyQueue;
     // Queue containing any other data (Not AT or LR)
     private BlockingQueue<String> unknownQueue;
-    private int timeoutInMillis = 5000;
-    private AtomicBoolean running = new AtomicBoolean(false);
+    private BooleanProperty running = new SimpleBooleanProperty(false);
 
     public LoraController(Config config, BlockingQueue<String> userInputQueue, LoraDiscovery loraDiscovery) {
         this.config = config;
@@ -53,6 +53,13 @@ public class LoraController implements Runnable {
             ChatsController.writeToLog("Controller already running!");
         else {
             running.set(true);
+            loraUART_thread = new Thread(loraUART, "loraUART_thread");
+            loraUART_thread.start();
+            boolean portOpened = loraUART.start();
+
+            if (!portOpened) {
+                stop();
+            }
         }
     }
 
@@ -71,6 +78,7 @@ public class LoraController implements Runnable {
                 e.printStackTrace();
             }
             running.set(false);
+            ChatsController.writeToLog("Lora Controller Thread ended");
         }
     }
 
@@ -80,12 +88,9 @@ public class LoraController implements Runnable {
     @Override
     public void run() {
         // Start UART Thread
-        loraUART_thread = new Thread(loraUART, "loraUART_thread");
-        loraUART_thread.start();
         start();
 
         Lora replyCode;
-
         while (running.get()) {
             System.out.println(loraState.toString());
             switch (loraState) {
@@ -181,7 +186,6 @@ public class LoraController implements Runnable {
                     break;
             }
         }
-        ChatsController.writeToLog("Lora Controller Thread ended");
     }
 
     /**
@@ -219,9 +223,14 @@ public class LoraController implements Runnable {
         ChatsController.writeToLog(reset);
         writeQueue.put(reset);
         // Wait for reply with timeout
+        int timeoutInMillis = 5000;
         String replyCode = replyQueue.poll(timeoutInMillis, TimeUnit.MILLISECONDS);
         if (replyCode == null) {
             sendRandomData(250);
+            // AT,SENDING
+            replyQueue.take();
+            // AT,SENDED
+            replyQueue.take();
             atRST();
         }
 
@@ -300,5 +309,17 @@ public class LoraController implements Runnable {
             equals = false;
         }
         return equals;
+    }
+
+    public boolean isRunning() {
+        return running.get();
+    }
+
+    public BooleanProperty runningProperty() {
+        return running;
+    }
+
+    public void setRunning(boolean running) {
+        this.running.set(running);
     }
 }

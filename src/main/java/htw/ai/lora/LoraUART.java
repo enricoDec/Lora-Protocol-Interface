@@ -1,12 +1,12 @@
 package htw.ai.lora;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortInvalidPortException;
 import htw.ai.ChatsController;
 import htw.ai.lora.config.Config;
 import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -30,7 +30,7 @@ public class LoraUART implements Runnable {
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
 
 
-    LoraUART(Config config, LoraDiscovery loraDiscovery) {
+    LoraUART(Config config, LoraDiscovery loraDiscovery) throws SerialPortInvalidPortException {
         comPort = SerialPort.getCommPort(config.getPort());
         comPort.setBaudRate(config.getBaudRate());
         comPort.setParity(config.getParity());
@@ -40,14 +40,26 @@ public class LoraUART implements Runnable {
 
         this.config = config;
         this.loraDiscovery = loraDiscovery;
-        start();
     }
 
-    void start() {
+    /**
+     * Start UART, returns false if port could not be opened
+     *
+     * @return false if port not opened, else true
+     */
+    boolean start() {
         if (running.get())
             ChatsController.writeToLog("LoraUART already running!");
-        else
+        else {
             running.set(true);
+            comPort.openPort();
+            if (!comPort.openPort()) {
+                ChatsController.writeToLog("Could not open port " + config.getPort() + " !", Color.DARKRED);
+                ChatsController.writeToLog("Wrong port or blocked by other process.", Color.DARKRED);
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -56,8 +68,10 @@ public class LoraUART implements Runnable {
     void stop() {
         if (!running.get())
             ChatsController.writeToLog("LoraUART already stopped!");
-        else
+        else {
             running.set(false);
+            comPort.closePort();
+        }
     }
 
     @Override
@@ -65,12 +79,6 @@ public class LoraUART implements Runnable {
         // Important only one thread per port should be running at any time
         // Thread constantly checks if new data is available at Serial Port
         // Only if new data needs to be written to Serial Port it will switch to write
-        if (!comPort.openPort()) {
-            ChatsController.writeToLog("Could not open port " + config.getPort() + " !", Color.DARKRED);
-            ChatsController.writeToLog("Wrong port or blocked by other process.", Color.DARKRED);
-            System.exit(-1);
-        }
-
         while (running.get()) {
             // If no data to be written continue to poll Serial Port
             if (writeQueue.isEmpty()) {
