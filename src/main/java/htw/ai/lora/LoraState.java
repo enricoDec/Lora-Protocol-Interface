@@ -1,5 +1,7 @@
 package htw.ai.lora;
 
+import javafx.beans.property.Property;
+
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : Lora-Protocol
@@ -20,10 +22,6 @@ public enum LoraState {
      */
     WAIT_REPLY,
     /**
-     * Wait for user message after AT+SEND=x and AT, OK
-     */
-    USER_MESSAGE_INPUT,
-    /**
      * Waiting for lora reply code AT,SENDING
      */
     SENDING,
@@ -31,8 +29,4 @@ public enum LoraState {
      * Waiting for Lora reply code AT,SENDED
      */
     SENDED,
-    /**
-     * Stop terminal process
-     */
-    STOP,
 }

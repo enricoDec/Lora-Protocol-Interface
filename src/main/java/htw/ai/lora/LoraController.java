@@ -2,8 +2,7 @@ package htw.ai.lora;
 
 import htw.ai.ChatsController;
 import htw.ai.lora.config.Config;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -19,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class LoraController implements Runnable {
     // JavaFX
     private LoraState loraState;
+    private SimpleIntegerProperty state = new SimpleIntegerProperty();
     private LoraDiscovery loraDiscovery;
     Thread loraUART_thread;
     private LoraUART loraUART;
@@ -32,6 +32,7 @@ public class LoraController implements Runnable {
     // Queue containing any other data (Not AT or LR)
     private BlockingQueue<String> unknownQueue;
     private BooleanProperty running = new SimpleBooleanProperty(false);
+    private StringProperty newMessage = new SimpleStringProperty();
 
     public LoraController(Config config, BlockingQueue<String> userInputQueue, LoraDiscovery loraDiscovery) {
         this.config = config;
@@ -43,6 +44,7 @@ public class LoraController implements Runnable {
         this.writeQueue = loraUART.getWriteQueue();
         this.replyQueue = loraUART.getReplyQueue();
         this.unknownQueue = loraUART.getUnknownQueue();
+        this.newMessage = loraUART.newMessageProperty();
     }
 
     /**
@@ -92,7 +94,7 @@ public class LoraController implements Runnable {
 
         Lora replyCode;
         while (running.get()) {
-            System.out.println(loraState.toString());
+            state.set(loraState.ordinal());
             switch (loraState) {
                 // Start State Menu
                 case START:
@@ -322,4 +324,26 @@ public class LoraController implements Runnable {
     public void setRunning(boolean running) {
         this.running.set(running);
     }
+
+    public int getState() {
+        return state.get();
+    }
+
+    public SimpleIntegerProperty stateProperty() {
+        return state;
+    }
+
+    public String getNewMessage() {
+        return newMessage.get();
+    }
+
+    public StringProperty newMessageProperty() {
+        return newMessage;
+    }
+
+    public void setState(int state) {
+        this.state.set(state);
+    }
+
+
 }

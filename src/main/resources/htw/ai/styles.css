@@ -57,3 +57,11 @@
     -fx-text-fill: #ffffff;
     -fx-background-radius: 20px;
 }
+
+.not-user-message {
+    -fx-padding: 5;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: -color-tertiary;
+    -fx-background-radius: 20px;
+}
+

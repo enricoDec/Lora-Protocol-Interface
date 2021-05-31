@@ -6,18 +6,17 @@ import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXToggleButton;
 import htw.ai.lora.LoraController;
 import htw.ai.lora.LoraDiscovery;
-import htw.ai.lora.Message;
+import htw.ai.lora.LoraState;
 import htw.ai.lora.config.Config;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ListProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -29,9 +28,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -47,7 +49,12 @@ public class ChatsController {
     private LoraController loraController;
     private BlockingQueue<String> userInputQueue;
     private BooleanProperty isRunning;
-    private ListProperty messages;
+    private IntegerProperty state;
+    private StringProperty newMessage;
+    private LinkedList<GridPane> userMessages = new LinkedList<>();
+    private int currentMessage = 0;
+    private FontIcon prevCheck;
+    private Config config;
 
     @FXML
     JFXButton btnChat;
@@ -83,7 +90,7 @@ public class ChatsController {
         userInputQueue = new ArrayBlockingQueue<>(20);
 
         // Read Config
-        Config config = new Config();
+        config = new Config();
         try {
             config.readConfig();
             writeToLog("Config read successfully.");
@@ -98,31 +105,51 @@ public class ChatsController {
         lora_thread.start();
 
         isRunning = loraController.runningProperty();
-        isRunning.addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean oldValue, Boolean newValue) {
-                Platform.runLater(() -> {
-                    if (newValue) {
-                        powerToggleButton.setText("On");
-                        powerToggleButton.setSelected(true);
-                    } else {
-                        powerToggleButton.setText("Off");
-                        powerToggleButton.setSelected(false);
-                    }
-                    cmdInputTextField.setDisable(false);
-                    btnSendCmd.setDisable(false);
-                });
+        isRunning.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
+            if (newValue) {
+                powerToggleButton.setText("On");
+                powerToggleButton.setSelected(true);
+                cmdInputTextField.setDisable(false);
+                btnSendCmd.setDisable(false);
+            } else {
+                powerToggleButton.setText("Off");
+                powerToggleButton.setSelected(false);
+                cmdInputTextField.setDisable(true);
+                btnSendCmd.setDisable(true);
             }
-        });
+        }));
 
-        messages = loraDiscovery.messagesProperty();
-        messages.addListener(new ListChangeListener() {
-            @Override
-            public void onChanged(Change change) {
-                System.out.println("Message arrived");
+        state = loraController.stateProperty();
+        state.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
+            if (!powerToggleButton.isSelected() || userMessages.isEmpty())
+                return;
+            if (newValue.intValue() == LoraState.SENDING.ordinal()) {
+                FontIcon fontIcon = new FontIcon("bi-check2");
+                fontIcon.setIconColor(Color.WHITE);
+                fontIcon.setFont(new Font(12));
+                GridPane.setValignment(fontIcon, VPos.BOTTOM);
+                GridPane.setHalignment(fontIcon, HPos.LEFT);
+                userMessages.get(currentMessage).add(fontIcon, 2, 0);
+                prevCheck = fontIcon;
+            } else if (newValue.intValue() == LoraState.SENDED.ordinal()) {
+                FontIcon fontIcon = new FontIcon("bi-check2-all");
+                fontIcon.setFont(new Font(12));
+                fontIcon.setIconColor(Color.WHITE);
+                GridPane.setValignment(fontIcon, VPos.BOTTOM);
+                GridPane.setHalignment(fontIcon, HPos.LEFT);
+                userMessages.get(currentMessage).getChildren().remove(prevCheck);
+                userMessages.get(currentMessage).add(fontIcon, 2, 0);
+                currentMessage++;
             }
-        });
+        }));
 
+        newMessage = loraController.newMessageProperty();
+        newMessage.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
+            if (!powerToggleButton.isSelected() || newMessage.getValue().isEmpty())
+                return;
+
+            displayNotUserMessage(newValue, "not-user-message", new Font(16));
+        }));
     }
 
     public void stop() {
@@ -141,6 +168,8 @@ public class ChatsController {
     public void powerToggleClicked(MouseEvent mouseEvent) {
         if (powerToggleButton.isSelected()) {
             powerToggleButton.setText("On");
+            cmdInputTextField.setDisable(false);
+            btnSendCmd.setDisable(false);
             powerToggleButton.setDisable(true);
             start();
         } else {
@@ -186,33 +215,75 @@ public class ChatsController {
 
     public void sendCmd(String cmd) {
         try {
-            //TODO: If queue full main thread will wait, not sure how to fix
             userInputQueue.put(cmd);
 
-            // Display message
-            Label message = new Label(cmd);
-            message.setAlignment(Pos.CENTER);
-            message.getStyleClass().add("user-message");
-            message.setAlignment(Pos.CENTER);
-            message.setWrapText(true);
-            message.setFont(new Font(14));
-
-            GridPane gridPane = new GridPane();
-            gridPane.setAlignment(Pos.CENTER);
-
-            gridPane.getColumnConstraints().add(new ColumnConstraints());
-            gridPane.getColumnConstraints().add(new ColumnConstraints());
-            gridPane.getRowConstraints().add(new RowConstraints());
-            gridPane.getColumnConstraints().get(0).setPercentWidth(50);
-            gridPane.getColumnConstraints().get(1).setPercentWidth(50);
-            gridPane.add(message, 1, 0);
-            GridPane.setHalignment(message, HPos.RIGHT);
-            gridPane.setPadding(new Insets(4, 4, 4, 4));
-
-            messageBox.getChildren().add(gridPane);
+            displayUserMessage(cmd, "user-message", new Font(16));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void displayUserMessage(String cmd, String cssClass, Font font) {
+        // Display message
+        Label message = new Label(cmd);
+        message.setAlignment(Pos.CENTER);
+        message.getStyleClass().add(cssClass);
+        message.setWrapText(true);
+        message.setFont(font);
+
+        GridPane gridPane = new GridPane();
+        gridPane.setAlignment(Pos.CENTER_RIGHT);
+
+        gridPane.getColumnConstraints().add(new ColumnConstraints());
+        gridPane.getColumnConstraints().add(new ColumnConstraints());
+        gridPane.getColumnConstraints().add(new ColumnConstraints());
+        gridPane.getRowConstraints().add(new RowConstraints());
+        gridPane.getColumnConstraints().get(0).setPercentWidth(0);
+        gridPane.getColumnConstraints().get(1).setPercentWidth(0);
+        gridPane.getColumnConstraints().get(2).setPercentWidth(0);
+        gridPane.add(message, 1, 0);
+        GridPane.setHalignment(message, HPos.RIGHT);
+        gridPane.setPadding(new Insets(4, 6, 4, 4));
+
+        Label user = new Label(String.valueOf(config.getAddress()));
+        user.setFont(new Font(10));
+        user.setTextFill(Color.color(1,1,1));
+        GridPane.setHalignment(user, HPos.RIGHT);
+        gridPane.add(user, 0, 0);
+
+        userMessages.add(gridPane);
+        messageBox.getChildren().add(gridPane);
+    }
+
+    public void displayNotUserMessage(String cmd, String cssClass, Font font) {
+        // Display message
+        Label message = new Label(cmd);
+        message.setAlignment(Pos.CENTER);
+        message.getStyleClass().add(cssClass);
+        message.setWrapText(true);
+        message.setFont(font);
+
+        GridPane gridPane = new GridPane();
+        gridPane.setAlignment(Pos.CENTER_LEFT);
+
+        gridPane.getColumnConstraints().add(new ColumnConstraints());
+        gridPane.getColumnConstraints().add(new ColumnConstraints());
+        gridPane.getColumnConstraints().add(new ColumnConstraints());
+        gridPane.getRowConstraints().add(new RowConstraints());
+        gridPane.getColumnConstraints().get(0).setPercentWidth(0);
+        gridPane.getColumnConstraints().get(1).setPercentWidth(0);
+        gridPane.getColumnConstraints().get(2).setPercentWidth(0);
+        gridPane.add(message, 1, 0);
+        GridPane.setHalignment(message, HPos.LEFT);
+        gridPane.setPadding(new Insets(4, 4, 4, 6));
+        messageBox.getChildren().add(gridPane);
+
+        FontIcon fontIcon = new FontIcon("bi-check2-all");
+        fontIcon.setFont(new Font(12));
+        fontIcon.setIconColor(Color.WHITE);
+        GridPane.setValignment(fontIcon, VPos.BOTTOM);
+        GridPane.setHalignment(fontIcon, HPos.LEFT);
+        gridPane.add(fontIcon, 0, 0);
     }
 
     public static void writeToLog(String message, Color color) {

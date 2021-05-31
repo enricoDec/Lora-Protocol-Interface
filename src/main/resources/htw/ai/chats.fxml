@@ -138,7 +138,7 @@
                     </VBox.margin>
                 </Pane>
                 <!-- Chat messages ScrollPane -->
-                <ScrollPane fx:id="chatScrollPane" fitToWidth="true" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                <ScrollPane fx:id="chatScrollPane" fitToWidth="true" pannable="true" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                     <styleClass>
                         <String fx:value="chat" />
                         <String fx:value="background-color-tertiary" />
