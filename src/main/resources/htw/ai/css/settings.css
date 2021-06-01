@@ -1,0 +1,65 @@
+* {
+    -color-primary: #212529;
+    -color-secondary: #343A40;
+    -color-tertiary: #495057;
+    -color-quaternary: #6C757D;
+}
+
+.background-color-primary {
+    -fx-background-color: -color-primary !important;
+}
+
+.background-color-secondary {
+    -fx-background-color: -color-secondary !important;
+}
+
+.background-color-tertiary {
+    -fx-background-color: -color-tertiary !important;
+}
+
+.background-color-quaternary {
+    -fx-background-color: -color-quaternary !important;
+}
+
+.setting-text {
+    -fx-text-fill: #ffffff;
+    -fx-pref-width: 80;
+}
+
+.setting-box {
+    -fx-text-inner-color: #ffffff;
+    -fx-background-radius: 20px;
+    -fx-background-color: #50c984;
+    -fx-pref-width: 240;
+}
+
+.setting-box-small {
+    -fx-text-inner-color: #ffffff;
+    -fx-background-radius: 20px;
+    -fx-background-color: #50c984;
+    -fx-pref-width: 180;
+}
+
+.combo-box .list-view .list-cell{
+    -fx-text-fill: black;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: white;
+}
+
+.setting-combo {
+    -fx-background-radius: 20px;
+    -fx-background-color: #50c984;
+    -fx-pref-width: 240;
+}
+
+.setting-combo-small {
+    -fx-background-radius: 20px;
+    -fx-background-color: #50c984;
+    -fx-pref-width: 180;
+}
+
+.no-focus {
+    -jfx-disable-visual-focus: true;
+}

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="360.0" prefWidth="640.0" styleClass="background-color-primary" stylesheets="@css/settings.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="htw.ai.UartSettingsController">
+    <columnConstraints>
+        <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="100.0" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints valignment="CENTER" vgrow="SOMETIMES" />
+        <RowConstraints valignment="CENTER" vgrow="SOMETIMES" />
+    </rowConstraints>
+    <children>
+        <VBox alignment="TOP_CENTER">
+            <children>
+                <HBox alignment="TOP_CENTER">
+                    <children>
+                        <JFXButton fx:id="buttonBack" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseReleased="#back" ripplerFill="#ffffff00" styleClass="no-focus" text="Button">
+                            <graphic>
+                                <FontIcon fill="WHITE" iconLiteral="bi-arrow-left-circle" iconSize="20" />
+                            </graphic>
+                            <font>
+                                <Font size="1.0" />
+                            </font>
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                        </JFXButton>
+                        <Pane HBox.hgrow="ALWAYS" />
+                        <Label alignment="CENTER" text="UART Properties" textFill="WHITE" wrapText="true">
+                            <font>
+                                <Font size="29.0" />
+                            </font>
+                        </Label>
+                        <Pane HBox.hgrow="ALWAYS" />
+                        <JFXButton fx:id="buttonForward" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseClicked="#forward" ripplerFill="WHITE" styleClass="no-focus" text="Button">
+                            <graphic>
+                                <FontIcon fill="WHITE" iconLiteral="bi-arrow-right-circle" iconSize="20" />
+                            </graphic>
+                            <font>
+                                <Font size="1.0" />
+                            </font>
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                        </JFXButton>
+                    </children>
+                </HBox>
+                <Pane prefHeight="2.0" styleClass="background-color-tertiary">
+                    <VBox.margin>
+                        <Insets left="15.0" right="15.0" top="5.0" />
+                    </VBox.margin>
+                </Pane>
+            </children>
+        </VBox>
+        <VBox alignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+            <children>
+                <HBox alignment="CENTER">
+                    <children>
+                        <Label styleClass="setting-text" text="Baudrate" wrapText="true">
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                        </Label>
+                        <JFXTextField fx:id="baudrateInput" focusColor="#ffffff00" labelFloat="true" styleClass="setting-box" text="123" unFocusColor="#ffffff00">
+                            <HBox.margin>
+                                <Insets />
+                            </HBox.margin>
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                        </JFXTextField>
+                    </children>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </padding>
+                </HBox>
+                <HBox alignment="CENTER">
+                    <children>
+                        <Label styleClass="setting-text" text="Parity" wrapText="true">
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                        </Label>
+                        <ComboBox fx:id="parityInput" styleClass="setting-combo" />
+                    </children>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </padding>
+                </HBox>
+                <HBox alignment="CENTER">
+                    <children>
+                        <Label styleClass="setting-text" text="Flowcontrol" wrapText="true">
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                        </Label>
+                        <ComboBox fx:id="flowcontrolInput" styleClass="setting-combo" />
+                    </children>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </padding>
+                </HBox>
+                <HBox alignment="CENTER">
+                    <children>
+                        <Label styleClass="setting-text" text="Number of Stopbits" wrapText="true">
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                        </Label>
+                        <ComboBox fx:id="numberOfStopBits" styleClass="setting-combo" />
+                    </children>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </padding>
+                </HBox>
+                <HBox alignment="CENTER">
+                    <children>
+                        <Label styleClass="setting-text" text="Number of Databits" wrapText="true">
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                        </Label>
+                        <JFXTextField fx:id="numberOfDataBits" focusColor="#ffffff00" labelFloat="true" styleClass="setting-box" text="123" unFocusColor="#ffffff00">
+                            <HBox.margin>
+                                <Insets />
+                            </HBox.margin>
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                        </JFXTextField>
+                    </children>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </padding>
+                </HBox>
+                <JFXButton fx:id="saveUART" buttonType="RAISED" mnemonicParsing="false" onMouseClicked="#save" ripplerFill="#50c984de" style="-fx-background-color: #FFFFFF;" text="Save" />
+            </children>
+        </VBox>
+    </children>
+</GridPane>

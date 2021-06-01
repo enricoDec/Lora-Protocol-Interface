@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="360.0" prefWidth="640.0" styleClass="background-color-primary" stylesheets="@css/settings.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="htw.ai.LoraSettingsController">
+    <columnConstraints>
+        <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="100.0" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints valignment="CENTER" />
+        <RowConstraints valignment="CENTER" vgrow="SOMETIMES" />
+    </rowConstraints>
+    <children>
+        <VBox alignment="TOP_CENTER">
+            <children>
+                <HBox alignment="TOP_CENTER" fillHeight="false">
+                    <children>
+                        <JFXButton fx:id="buttonBack" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" onMouseReleased="#back" ripplerFill="#ffffff00" styleClass="no-focus" text="Button">
+                            <graphic>
+                                <FontIcon fill="WHITE" iconLiteral="bi-arrow-left-circle" iconSize="20" />
+                            </graphic>
+                            <font>
+                                <Font size="1.0" />
+                            </font>
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                        </JFXButton>
+                        <Pane HBox.hgrow="ALWAYS" />
+                        <Label alignment="CENTER" text="Lora Configuration" textFill="WHITE" wrapText="true">
+                            <font>
+                                <Font size="29.0" />
+                            </font>
+                        </Label>
+                        <Pane HBox.hgrow="ALWAYS" />
+                        <JFXButton alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" ripplerFill="#ffffff00" styleClass="no-focus" text="Button">
+                            <graphic>
+                                <FontIcon fill="WHITE" iconColor="TRANSPARENT" iconLiteral="bi-arrow-right-circle" iconSize="20" />
+                            </graphic>
+                            <font>
+                                <Font size="1.0" />
+                            </font>
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                        </JFXButton>
+                    </children>
+                </HBox>
+                <Pane prefHeight="2.0" styleClass="background-color-tertiary">
+                    <VBox.margin>
+                        <Insets left="15.0" right="15.0" top="5.0" />
+                    </VBox.margin>
+                </Pane>
+            </children>
+        </VBox>
+        <VBox alignment="CENTER" GridPane.rowIndex="1">
+            <children>
+                <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                    <children>
+                        <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
+                            <children>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Carrier Frequency" wrapText="true">
+                                            <HBox.margin>
+                                                <Insets />
+                                            </HBox.margin>
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <JFXTextField fx:id="carrierFrequencyInput" focusColor="TRANSPARENT" styleClass="setting-box-small" unFocusColor="TRANSPARENT">
+                                            <HBox.margin>
+                                                <Insets />
+                                            </HBox.margin>
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding>
+                                        </JFXTextField>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Power" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <JFXTextField fx:id="powerInput" focusColor="TRANSPARENT" styleClass="setting-box-small" unFocusColor="TRANSPARENT">
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding></JFXTextField>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Modulation Bandwidth" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <JFXTextField fx:id="modulationBandwidthInput" focusColor="TRANSPARENT" styleClass="setting-box-small" unFocusColor="TRANSPARENT">
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding></JFXTextField>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Spreading Factor" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <JFXTextField fx:id="spreadingFactorInput" focusColor="TRANSPARENT" styleClass="setting-box-small" unFocusColor="TRANSPARENT">
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding></JFXTextField>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Error Coding" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <JFXTextField fx:id="errorCodingInput" focusColor="TRANSPARENT" styleClass="setting-box-small" unFocusColor="TRANSPARENT">
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding></JFXTextField>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="CrC" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <ComboBox fx:id="crcInput" styleClass="setting-combo-small" />
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                            </children>
+                        </VBox>
+                        <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
+                            <children>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Implicit Header" wrapText="true">
+                                            <HBox.margin>
+                                                <Insets />
+                                            </HBox.margin>
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <ComboBox fx:id="implicitHeaderInput" styleClass="setting-combo-small">
+                                            <HBox.margin>
+                                                <Insets />
+                                            </HBox.margin>
+                                        </ComboBox>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="RX Single" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <ComboBox fx:id="rxSingleInput" styleClass="setting-combo-small" />
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Frequency Hop" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <ComboBox fx:id="frequencyHopInput" styleClass="setting-combo-small" />
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Hop Period" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <JFXTextField fx:id="hopPeriodInput" focusColor="TRANSPARENT" styleClass="setting-box-small" unFocusColor="TRANSPARENT">
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding></JFXTextField>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Rx Packet Timout" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <JFXTextField fx:id="packetTimeoutInput" focusColor="TRANSPARENT" styleClass="setting-box-small" unFocusColor="TRANSPARENT">
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding></JFXTextField>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Payload Length" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <JFXTextField fx:id="payloadLengthInput" focusColor="TRANSPARENT" styleClass="setting-box-small" unFocusColor="TRANSPARENT">
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding></JFXTextField>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                                <HBox alignment="CENTER">
+                                    <children>
+                                        <Label minWidth="105.0" styleClass="setting-text" text="Preamble Length" wrapText="true">
+                                            <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                            </padding>
+                                        </Label>
+                                        <JFXTextField fx:id="preambleLengthInput" focusColor="TRANSPARENT" styleClass="setting-box-small" unFocusColor="TRANSPARENT">
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding></JFXTextField>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                    </padding>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+                <JFXButton fx:id="saveLora" alignment="BOTTOM_CENTER" buttonType="RAISED" mnemonicParsing="false" onMouseClicked="#save" ripplerFill="#50c984de" style="-fx-background-color: #FFFFFF;" text="Save">
+                    <VBox.margin>
+                        <Insets bottom="8.0" left="5.0" right="5.0" top="5.0" />
+                    </VBox.margin>
+                </JFXButton>
+            </children>
+        </VBox>
+    </children>
+</GridPane>

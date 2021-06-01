@@ -3,6 +3,7 @@ package htw.ai.lora.config;
 import htw.ai.lora.Lora;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.InvalidPropertiesFormatException;
@@ -16,6 +17,7 @@ import java.util.Properties;
  **/
 public class Config {
     private String propFileName = "setup.properties";
+    Properties prop;
     // Lora Config
     private int carrierFrequency;
     private int power;
@@ -42,13 +44,14 @@ public class Config {
 
     /**
      * Read the config file and set properties variables
+     *
      * @throws IOException thrown if any I/O error occur
      */
     public void readConfig() throws IOException {
         InputStream inputStream = null;
 
         try {
-            Properties prop = new Properties();
+            prop = new Properties();
 
             inputStream = Config.class.getClassLoader().getResourceAsStream(propFileName);
 
@@ -90,6 +93,41 @@ public class Config {
                 inputStream.close();
             }
         }
+    }
+
+    public void saveConfig(Config config) throws IOException {
+        // Set Lora Config
+        prop.setProperty("carrierFrequency", String.valueOf(config.carrierFrequency));
+        prop.setProperty("power", String.valueOf(config.power));
+        prop.setProperty("modulationBandwidth", String.valueOf(config.modulationBandwidth));
+        prop.setProperty("spreadingFactor", String.valueOf(config.spreadingFactor));
+        prop.setProperty("errorCoding", String.valueOf(config.errorCoding));
+        prop.setProperty("crc", String.valueOf(config.crc));
+        prop.setProperty("implicitHeaderOn", String.valueOf(config.implicitHeaderOn));
+        prop.setProperty("rxSingleOn", String.valueOf(config.rxSingleOn));
+        prop.setProperty("frequencyHopOn", String.valueOf(config.frequencyHopOn));
+        prop.setProperty("hopPeriod", String.valueOf(config.hopPeriod));
+        prop.setProperty("rxPacketTimeout", String.valueOf(config.rxPacketTimeout));
+        prop.setProperty("payloadLength", String.valueOf(config.payloadLength));
+        prop.setProperty("preambleLength", String.valueOf(config.preambleLength));
+
+        // Lora UART Config
+        prop.setProperty("baudRate", String.valueOf(config.baudRate));
+        prop.setProperty("parity", String.valueOf(config.parity));
+        prop.setProperty("flowControl", String.valueOf(config.flowControl));
+        prop.setProperty("numberOfStopBits", String.valueOf(config.numberOfStopBits));
+        prop.setProperty("address", String.valueOf(config.address));
+        prop.setProperty("port", String.valueOf(config.port));
+        prop.setProperty("numberOfDataBits", String.valueOf(config.numberOfDataBits));
+
+        String propertyFile = Config.class.getClassLoader().getResource(propFileName).getFile();
+        prop.store(new FileOutputStream(propertyFile), "test");
+        close();
+    }
+
+    public void close() throws IOException {
+        String propertyFile = "src/main/resources/setup.properties";
+        prop.store(new FileOutputStream(propertyFile), "Lora Config");
     }
 
     /**

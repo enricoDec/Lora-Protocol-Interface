@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.*?>
-<?import java.lang.*?>
 <?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <?import org.kordamp.ikonli.javafx.*?>
-
-<GridPane prefHeight="360.0" prefWidth="640.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="htw.ai.ChatsController">
+<?import java.lang.*?>
+<GridPane prefHeight="360.0" prefWidth="640.0" stylesheets="@css/chats.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="htw.ai.ChatsController">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" maxWidth="40.0" minWidth="30.0" prefWidth="35.0" />
         <ColumnConstraints hgrow="SOMETIMES" maxWidth="220.0" minWidth="160.0" prefWidth="160.0" />

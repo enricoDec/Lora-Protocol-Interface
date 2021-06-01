@@ -20,7 +20,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         scene = new Scene(loadFXML("chats"));
-        scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("css/chats.css").toExternalForm());
         stage.setScene(scene);
         stage.setMinWidth(640);
         stage.setMinHeight(360);

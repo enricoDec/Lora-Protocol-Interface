@@ -53,7 +53,7 @@ public class ChatsController {
     private LinkedList<GridPane> userMessages = new LinkedList<>();
     private int currentMessage = 0;
     private FontIcon prevCheck;
-    private Config config;
+    public static Config CONFIG = new Config();
 
     @FXML
     JFXButton btnChat;
@@ -78,28 +78,32 @@ public class ChatsController {
     @FXML
     VBox messageBox;
 
-
+    @FXML
     public void initialize() {
         chatsList.setFocusTraversable(false);
         cmdInputTextField.setDisable(true);
         btnSendCmd.setDisable(true);
+        try {
+            CONFIG.readConfig();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void start() {
         userInputQueue = new ArrayBlockingQueue<>(20);
 
         // Read Config
-        config = new Config();
         try {
-            config.readConfig();
+            CONFIG.readConfig();
             writeToLog("Config read successfully.");
-            writeToLog(config.toString());
+            writeToLog(CONFIG.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         loraDiscovery = new LoraDiscovery();
-        loraController = new LoraController(config, userInputQueue, loraDiscovery);
+        loraController = new LoraController(CONFIG, userInputQueue, loraDiscovery);
         Thread lora_thread = new Thread(loraController, "Lora_Thread");
         lora_thread.start();
 
@@ -162,7 +166,9 @@ public class ChatsController {
     public void groupButtonClicked(MouseEvent mouseEvent) {
     }
 
-    public void settingsButtonClicked(MouseEvent mouseEvent) {
+    @FXML
+    public void settingsButtonClicked(MouseEvent mouseEvent) throws IOException {
+        App.setRoot("uartSettings");
     }
 
     public void powerToggleClicked(MouseEvent mouseEvent) {
@@ -245,9 +251,9 @@ public class ChatsController {
         GridPane.setHalignment(message, HPos.RIGHT);
         gridPane.setPadding(new Insets(4, 6, 4, 4));
 
-        Label user = new Label(String.valueOf(config.getAddress()));
+        Label user = new Label(String.valueOf(CONFIG.getAddress()));
         user.setFont(new Font(10));
-        user.setTextFill(Color.color(1,1,1));
+        user.setTextFill(Color.color(1, 1, 1));
         GridPane.setHalignment(user, HPos.RIGHT);
         gridPane.add(user, 0, 0);
 

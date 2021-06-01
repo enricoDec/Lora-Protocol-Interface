@@ -1,7 +1,5 @@
 package htw.ai.lora;
 
-import javafx.beans.property.Property;
-
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : Lora-Protocol
