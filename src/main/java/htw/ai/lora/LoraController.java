@@ -207,6 +207,13 @@ public class LoraController implements Runnable {
             atConfig();
             // Get Lora version
             atGetVersion();
+            // Send something
+            String hello = "Client " + config.getAddress() + " started.";
+            writeQueue.put(Lora.AT_SEND.CODE + hello.length());
+            replyQueue.take();
+            writeQueue.put(hello);
+            replyQueue.take();
+            replyQueue.take();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

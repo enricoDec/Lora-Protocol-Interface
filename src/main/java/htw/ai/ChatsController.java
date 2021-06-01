@@ -28,7 +28,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -149,6 +148,7 @@ public class ChatsController {
                 return;
 
             displayNotUserMessage(newValue, "not-user-message", new Font(16));
+            newMessage.set("");
         }));
     }
 
