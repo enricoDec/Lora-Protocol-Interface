@@ -4,8 +4,9 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
-<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import javafx.scene.text.*?>
+<?import org.kordamp.ikonli.javafx.*?>
+
 <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="360.0" prefWidth="640.0" styleClass="background-color-primary" stylesheets="@css/settings.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="htw.ai.LoraSettingsController">
     <columnConstraints>
         <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="100.0" />
@@ -281,7 +282,7 @@
                         </VBox>
                     </children>
                 </HBox>
-                <JFXButton fx:id="saveLora" alignment="BOTTOM_CENTER" buttonType="RAISED" mnemonicParsing="false" onMouseClicked="#save" ripplerFill="#50c984de" style="-fx-background-color: #FFFFFF;" text="Save">
+                <JFXButton fx:id="saveLora" alignment="BOTTOM_CENTER" mnemonicParsing="false" onMouseClicked="#save" ripplerFill="#50c984de" style="-fx-background-color: #FFFF;" text="Save">
                     <VBox.margin>
                         <Insets bottom="8.0" left="5.0" right="5.0" top="5.0" />
                     </VBox.margin>

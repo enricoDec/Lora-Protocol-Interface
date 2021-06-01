@@ -38,6 +38,8 @@ public class UartSettingsController {
     @FXML
     public JFXTextField numberOfDataBits;
     @FXML
+    public JFXTextField portInput;
+    @FXML
     public JFXButton saveUART;
 
     @FXML
@@ -58,6 +60,7 @@ public class UartSettingsController {
                 (stopBits -> numberOfStopBits.getItems().add(stopBits)));
         numberOfStopBits.getSelectionModel().select(config.getParity());
         numberOfDataBits.setText(String.valueOf(config.getNumberOfDataBits()));
+        portInput.setText(config.getPort());
     }
 
     public void back() throws IOException {
@@ -85,6 +88,7 @@ public class UartSettingsController {
         config.setFlowControl(flowcontrolInput.getSelectionModel().getSelectedItem().ordinal());
         config.setNumberOfStopBits(numberOfStopBits.getSelectionModel().getSelectedItem().getValue());
         config.setNumberOfDataBits(dataBits);
+        config.setPort(portInput.getText());
 
         try {
             config.saveConfig(config);

@@ -4,8 +4,9 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
-<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import javafx.scene.text.*?>
+<?import org.kordamp.ikonli.javafx.*?>
+
 <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="360.0" prefWidth="640.0" styleClass="background-color-primary" stylesheets="@css/settings.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="htw.ai.UartSettingsController">
     <columnConstraints>
         <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="100.0" />
@@ -138,7 +139,27 @@
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                     </padding>
                 </HBox>
-                <JFXButton fx:id="saveUART" buttonType="RAISED" mnemonicParsing="false" onMouseClicked="#save" ripplerFill="#50c984de" style="-fx-background-color: #FFFFFF;" text="Save" />
+                <HBox alignment="CENTER">
+                    <children>
+                        <Label styleClass="setting-text" text="Port" wrapText="true">
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                        </Label>
+                        <JFXTextField fx:id="portInput" focusColor="#ffffff00" labelFloat="true" styleClass="setting-box" text="123" unFocusColor="#ffffff00">
+                            <HBox.margin>
+                                <Insets />
+                            </HBox.margin>
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                            </padding>
+                        </JFXTextField>
+                    </children>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </padding>
+                </HBox>
+                <JFXButton fx:id="saveUART" mnemonicParsing="false" onMouseClicked="#save" ripplerFill="#50c984de" style="-fx-background-color: #FFFF;" text="Save" />
             </children>
         </VBox>
     </children>
