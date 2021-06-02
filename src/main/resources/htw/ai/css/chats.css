@@ -64,3 +64,8 @@
     -fx-text-fill: -color-tertiary;
     -fx-background-radius: 20px;
 }
+
+.client {
+    -fx-background-color: -color-quaternary;
+    -fx-border-color: -color-primary;
+}

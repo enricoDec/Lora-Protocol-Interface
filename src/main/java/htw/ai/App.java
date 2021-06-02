@@ -10,6 +10,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -25,6 +26,8 @@ public class App extends Application {
         stage.setMinWidth(640);
         stage.setMinHeight(360);
         stage.setTitle("Lora Interface");
+        Image icon = new Image(getClass().getResource("icon.png").toExternalForm());
+        stage.getIcons().add(icon);
         stage.show();
     }
 

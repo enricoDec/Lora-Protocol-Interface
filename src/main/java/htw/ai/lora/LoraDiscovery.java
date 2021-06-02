@@ -1,5 +1,9 @@
 package htw.ai.lora;
 
+import htw.ai.ChatsController;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+
 import java.util.HashSet;
 
 /**
@@ -10,6 +14,7 @@ import java.util.HashSet;
  **/
 public class LoraDiscovery {
     private HashSet<Integer> discoveryList = new HashSet<>();
+    private IntegerProperty newClient = new SimpleIntegerProperty();
 
     /**
      * Add a client address to the discovery list
@@ -17,7 +22,11 @@ public class LoraDiscovery {
      * @param clientId address to be added
      */
     public void addClientAddress(int clientId) {
-        discoveryList.add(clientId);
+        if (!discoveryList.contains(clientId)) {
+            ChatsController.writeToLog("New Client discovered " + clientId);
+            discoveryList.add(clientId);
+            newClient.set(clientId);
+        }
     }
 
     /**
@@ -27,5 +36,17 @@ public class LoraDiscovery {
      */
     public HashSet<Integer> getDiscoveryList() {
         return discoveryList;
+    }
+
+    public int getNewClient() {
+        return newClient.get();
+    }
+
+    public IntegerProperty newClientProperty() {
+        return newClient;
+    }
+
+    public void setNewClient(int newClient) {
+        this.newClient.set(newClient);
     }
 }

@@ -4,9 +4,8 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-<?import org.kordamp.ikonli.javafx.*?>
-
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="360.0" prefWidth="640.0" styleClass="background-color-primary" stylesheets="@css/settings.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="htw.ai.LoraSettingsController">
     <columnConstraints>
         <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" percentWidth="100.0" />
@@ -64,9 +63,9 @@
                     <children>
                         <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                             <children>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Carrier Frequency" wrapText="true">
+                                        <Label minWidth="110.0" styleClass="setting-text" text="Carrier Frequency" wrapText="true">
                                             <HBox.margin>
                                                 <Insets />
                                             </HBox.margin>
@@ -87,9 +86,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Power" wrapText="true">
+                                        <Label minWidth="110.0" styleClass="setting-text" text="Power" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>
@@ -103,9 +102,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Modulation Bandwidth" wrapText="true">
+                                        <Label minWidth="110.0" styleClass="setting-text" text="Modulation Bandwidth" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>
@@ -119,9 +118,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Spreading Factor" wrapText="true">
+                                        <Label minWidth="110.0" styleClass="setting-text" text="Spreading Factor" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>
@@ -135,9 +134,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Error Coding" wrapText="true">
+                                        <Label minWidth="110.0" styleClass="setting-text" text="Error Coding" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>
@@ -151,9 +150,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="CrC" wrapText="true">
+                                        <Label minWidth="110.0" styleClass="setting-text" text="CrC" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>
@@ -168,9 +167,9 @@
                         </VBox>
                         <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                             <children>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Implicit Header" wrapText="true">
+                                        <Label minWidth="120.0" styleClass="setting-text" text="Implicit Header" wrapText="true">
                                             <HBox.margin>
                                                 <Insets />
                                             </HBox.margin>
@@ -188,9 +187,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="RX Single" wrapText="true">
+                                        <Label minWidth="120.0" styleClass="setting-text" text="RX Single" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>
@@ -201,9 +200,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Frequency Hop" wrapText="true">
+                                        <Label minWidth="120.0" styleClass="setting-text" text="Frequency Hop" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>
@@ -214,9 +213,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Hop Period" wrapText="true">
+                                        <Label minWidth="120.0" styleClass="setting-text" text="Hop Period" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>
@@ -230,9 +229,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Rx Packet Timout" wrapText="true">
+                                        <Label minWidth="120.0" styleClass="setting-text" text="Rx Packet Timeout" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>
@@ -246,9 +245,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Payload Length" wrapText="true">
+                                        <Label minWidth="120.0" styleClass="setting-text" text="Payload Length" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>
@@ -262,9 +261,9 @@
                                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                     </padding>
                                 </HBox>
-                                <HBox alignment="CENTER">
+                                <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                                     <children>
-                                        <Label minWidth="105.0" styleClass="setting-text" text="Preamble Length" wrapText="true">
+                                        <Label minWidth="120.0" styleClass="setting-text" text="Preamble Length" wrapText="true">
                                             <padding>
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                             </padding>

@@ -1,7 +1,6 @@
 package htw.ai;
 
 import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXToggleButton;
 import htw.ai.lora.LoraController;
@@ -23,10 +22,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -45,6 +41,7 @@ import java.util.concurrent.BlockingQueue;
 public class ChatsController {
     private int pressed = 0;
     private LoraDiscovery loraDiscovery;
+    private IntegerProperty newClient;
     private LoraController loraController;
     private BlockingQueue<String> userInputQueue;
     private BooleanProperty isRunning;
@@ -64,8 +61,6 @@ public class ChatsController {
     @FXML
     JFXTextField searchBar;
     @FXML
-    JFXListView chatsList;
-    @FXML
     Label chatName;
     @FXML
     JFXToggleButton powerToggleButton;
@@ -77,10 +72,11 @@ public class ChatsController {
     JFXButton btnSendCmd;
     @FXML
     VBox messageBox;
+    @FXML
+    VBox chatList;
 
     @FXML
     public void initialize() {
-        chatsList.setFocusTraversable(false);
         cmdInputTextField.setDisable(true);
         btnSendCmd.setDisable(true);
         try {
@@ -153,6 +149,26 @@ public class ChatsController {
 
             displayNotUserMessage(newValue, "not-user-message", new Font(16));
             newMessage.set("");
+        }));
+
+        newClient = loraDiscovery.newClientProperty();
+        newClient.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
+            HBox clientBox = new HBox();
+            clientBox.getStyleClass().add("client");
+            clientBox.setPrefHeight(40);
+            chatList.getChildren().add(clientBox);
+
+            Label client = new Label(newValue.toString());
+            client.setMinWidth(28);
+            client.setTextFill(Color.WHITE);
+            client.setPadding(new Insets(5));
+            clientBox.getChildren().add(client);
+
+            Label clientMessage = new Label("Client " + newValue + " discovered.");
+            clientMessage.setAlignment(Pos.TOP_LEFT);
+            clientMessage.setWrapText(true);
+            clientMessage.setTextFill(Color.WHITE);
+            clientBox.getChildren().add(clientMessage);
         }));
     }
 

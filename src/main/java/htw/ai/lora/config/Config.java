@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 
@@ -52,7 +53,6 @@ public class Config {
 
         try {
             prop = new Properties();
-
             inputStream = Config.class.getClassLoader().getResourceAsStream(propFileName);
 
             if (inputStream != null) {
@@ -120,14 +120,10 @@ public class Config {
         prop.setProperty("port", String.valueOf(config.port));
         prop.setProperty("numberOfDataBits", String.valueOf(config.numberOfDataBits));
 
-        String propertyFile = Config.class.getClassLoader().getResource(propFileName).getFile();
-        prop.store(new FileOutputStream(propertyFile), "test");
-        close();
-    }
-
-    public void close() throws IOException {
-        String propertyFile = "src/main/resources/setup.properties";
-        prop.store(new FileOutputStream(propertyFile), "Lora Config");
+        URL file = Config.class.getClassLoader().getResource(propFileName);
+        System.out.println(file.getPath());
+        System.out.println(file.getFile());
+        prop.store(new FileOutputStream(propFileName), "Configuration File");
     }
 
     /**

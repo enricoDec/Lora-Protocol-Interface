@@ -59,7 +59,7 @@
             </children>
         </VBox>
         <!-- Chat bar -->
-        <VBox prefHeight="200.0" prefWidth="100.0" styleClass="background-color-secondary" GridPane.columnIndex="1">
+        <VBox styleClass="background-color-secondary" GridPane.columnIndex="1">
             <children>
                 <!-- Search bar -->
                 <HBox alignment="CENTER" minHeight="35.0" prefHeight="35.0" prefWidth="175.0">
@@ -94,16 +94,11 @@
                         <Insets />
                     </VBox.margin>
                 </Pane>
-                <!-- Chat List View -->
-                <JFXListView fx:id="chatsList" prefWidth="138.0" VBox.vgrow="ALWAYS">
-                    <VBox.margin>
-                        <Insets />
-                    </VBox.margin>
-                    <styleClass>
-                        <String fx:value="no-focus" />
-                        <String fx:value="background-color-secondary" />
-                    </styleClass>
-                </JFXListView>
+                <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" pannable="true" prefHeight="200.0" prefWidth="200.0" styleClass="background-color-secondary" VBox.vgrow="ALWAYS">
+                    <content>
+                        <VBox fx:id="chatList" alignment="TOP_CENTER" />
+                    </content>
+                </ScrollPane>
             </children>
         </VBox>
         <!-- Right Column (Chat) -->
@@ -138,11 +133,7 @@
                     </VBox.margin>
                 </Pane>
                 <!-- Chat messages ScrollPane -->
-                <ScrollPane fx:id="chatScrollPane" fitToWidth="true" pannable="true" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
-                    <styleClass>
-                        <String fx:value="chat" />
-                        <String fx:value="background-color-tertiary" />
-                    </styleClass>
+                <ScrollPane fx:id="chatScrollPane" fitToWidth="true" hbarPolicy="NEVER" pannable="true" styleClass="background-color-tertiary" VBox.vgrow="ALWAYS">
                     <content>
                         <VBox fx:id="messageBox" alignment="CENTER" />
                     </content>

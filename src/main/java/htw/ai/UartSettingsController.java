@@ -78,7 +78,7 @@ public class UartSettingsController {
             baudrate = Integer.parseInt(baudrateInput.getText().strip());
             dataBits = Integer.parseInt(numberOfDataBits.getText().strip());
         } catch (NumberFormatException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
+            Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setContentText("Baudrate is not a number.");
             alert.show();
             return;
@@ -92,6 +92,9 @@ public class UartSettingsController {
 
         try {
             config.saveConfig(config);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("Lora Setting successfully saved." + System.lineSeparator() + " To apply the settings restart.");
+            alert.show();
         } catch (IOException e) {
             e.printStackTrace();
         }

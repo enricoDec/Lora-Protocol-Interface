@@ -37,7 +37,7 @@
     -fx-text-inner-color: #ffffff;
     -fx-background-radius: 20px;
     -fx-background-color: #50c984;
-    -fx-pref-width: 180;
+    -fx-pref-width: 150;
 }
 
 .combo-box .list-view .list-cell{
@@ -57,7 +57,7 @@
 .setting-combo-small {
     -fx-background-radius: 20px;
     -fx-background-color: #50c984;
-    -fx-pref-width: 180;
+    -fx-pref-width: 150;
 }
 
 .no-focus {

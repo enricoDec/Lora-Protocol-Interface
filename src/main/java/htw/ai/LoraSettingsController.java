@@ -88,42 +88,42 @@ public class LoraSettingsController {
         try {
             carrierFrequency = Integer.parseInt(carrierFrequencyInput.getText().strip());
             if (carrierFrequency < 410000000 || carrierFrequency > 470000000)
-                showAlert("Carrier frequency not in valid range");
+                showAlert("Carrier frequency not in valid range", Alert.AlertType.WARNING);
 
             power = Integer.parseInt(powerInput.getText().strip());
             if (power < 5 || power > 20)
-                showAlert("Power not in valid range");
+                showAlert("Power not in valid range", Alert.AlertType.WARNING);
 
             modulationBandwidth = Integer.parseInt(modulationBandwidthInput.getText().strip());
             if (modulationBandwidth < 0 || modulationBandwidth > 9)
-                showAlert("Modulation Bandwidth not in valid range");
+                showAlert("Modulation Bandwidth not in valid range", Alert.AlertType.WARNING);
 
             spreadingFactor = Integer.parseInt(spreadingFactorInput.getText().strip());
             if (spreadingFactor < 6 || spreadingFactor > 12)
-                showAlert("Spreading Factor not in valid range");
+                showAlert("Spreading Factor not in valid range", Alert.AlertType.WARNING);
 
             errorCoding = Integer.parseInt(errorCodingInput.getText().strip());
             if (errorCoding < 1 || errorCoding > 4)
-                showAlert("Error Coding not in valid range");
+                showAlert("Error Coding not in valid range", Alert.AlertType.WARNING);
 
             hopPeriod = Integer.parseInt(hopPeriodInput.getText().strip());
             if (hopPeriod < 0 || hopPeriod > 4)
-                showAlert("I don't know what this is. It's not documented");
+                showAlert("I don't know what this is. It's not documented", Alert.AlertType.WARNING);
 
             packetTimeout = Integer.parseInt(packetTimeoutInput.getText().strip());
             if (packetTimeout < 1 || packetTimeout > 65535)
-                showAlert("Packet timeout not in valid range");
+                showAlert("Packet timeout not in valid range", Alert.AlertType.WARNING);
 
             payloadLength = Integer.parseInt(payloadLengthInput.getText().strip());
             if (payloadLength < 5 || payloadLength > 255)
-                showAlert("Payload length not in valid range");
+                showAlert("Payload length not in valid range", Alert.AlertType.WARNING);
 
             preambleLength = Integer.parseInt(preambleLengthInput.getText().strip());
             if (preambleLength < 4 || preambleLength > 65535)
-                showAlert("Preamble length not in valid range");
+                showAlert("Preamble length not in valid range", Alert.AlertType.WARNING);
 
         } catch (NumberFormatException e) {
-            showAlert("Could not parse, check input.");
+            showAlert("Could not parse, check input.", Alert.AlertType.WARNING);
             return;
         }
 
@@ -143,13 +143,14 @@ public class LoraSettingsController {
 
         try {
             config.saveConfig(config);
+            showAlert("Lora Setting successfully saved." + System.lineSeparator() + "To apply the settings restart.", Alert.AlertType.INFORMATION);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+    public void showAlert(String message, Alert.AlertType alertType) {
+        Alert alert = new Alert(alertType);
         alert.setContentText(message);
         alert.show();
     }
