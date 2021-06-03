@@ -2,11 +2,7 @@ package htw.ai.lora.config;
 
 import htw.ai.lora.Lora;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.io.*;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 
@@ -17,7 +13,8 @@ import java.util.Properties;
  * @since : 14-05-2021
  **/
 public class Config {
-    private String propFileName = "setup.properties";
+    private final String PROP_FILE_NAME = "setup.properties";
+    private boolean localCopyExist = false;
     Properties prop;
     // Lora Config
     private int carrierFrequency;
@@ -44,22 +41,33 @@ public class Config {
     private int address;
 
     /**
-     * Read the config file and set properties variables
+     * Read the config file and set properties variables.
      *
      * @throws IOException thrown if any I/O error occur
      */
     public void readConfig() throws IOException {
+        if (new File(getPROP_FILE_NAME()).exists())
+            localCopyExist = true;
+
         InputStream inputStream = null;
 
         try {
             prop = new Properties();
-            inputStream = Config.class.getClassLoader().getResourceAsStream(propFileName);
-
+            if (!localCopyExist)
+                inputStream = Config.class.getClassLoader().getResourceAsStream(PROP_FILE_NAME);
+            else
+                inputStream = new FileInputStream(PROP_FILE_NAME);
             if (inputStream != null) {
                 prop.load(inputStream);
             } else {
-                throw new FileNotFoundException("Property file '" + propFileName + "' not found in the classpath");
+                throw new FileNotFoundException("Property file '" + PROP_FILE_NAME + "' not found in the classpath");
             }
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+        try {
             // Get Lora Config
             this.carrierFrequency = Integer.parseInt(prop.getProperty("carrierFrequency"));
             this.power = Integer.parseInt(prop.getProperty("power"));
@@ -88,10 +96,6 @@ public class Config {
 
         } catch (NumberFormatException e) {
             System.out.println("Could not parse String to Integer: " + e);
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
         }
     }
 
@@ -120,10 +124,7 @@ public class Config {
         prop.setProperty("port", String.valueOf(config.port));
         prop.setProperty("numberOfDataBits", String.valueOf(config.numberOfDataBits));
 
-        URL file = Config.class.getClassLoader().getResource(propFileName);
-        System.out.println(file.getPath());
-        System.out.println(file.getFile());
-        prop.store(new FileOutputStream(propFileName), "Configuration File");
+        prop.store(new FileOutputStream(PROP_FILE_NAME), "Configuration File");
     }
 
     /**
@@ -133,28 +134,23 @@ public class Config {
      */
     public String getConfiguration() {
         final StringBuffer sb = new StringBuffer();
+        append(sb, carrierFrequency, power, modulationBandwidth, spreadingFactor, errorCoding, crc);
+        append(sb, implicitHeaderOn, rxSingleOn, frequencyHopOn, hopPeriod, rxPacketTimeout, payloadLength);
+        sb.append(preambleLength);
+        return sb.toString();
+    }
+
+    private void append(StringBuffer sb, int carrierFrequency, int power, int modulationBandwidth, int spreadingFactor, int errorCoding, int crc) {
         sb.append(carrierFrequency).append(Lora.DIVIDER.CODE);
         sb.append(power).append(Lora.DIVIDER.CODE);
         sb.append(modulationBandwidth).append(Lora.DIVIDER.CODE);
         sb.append(spreadingFactor).append(Lora.DIVIDER.CODE);
         sb.append(errorCoding).append(Lora.DIVIDER.CODE);
         sb.append(crc).append(Lora.DIVIDER.CODE);
-        sb.append(implicitHeaderOn).append(Lora.DIVIDER.CODE);
-        sb.append(rxSingleOn).append(Lora.DIVIDER.CODE);
-        sb.append(frequencyHopOn).append(Lora.DIVIDER.CODE);
-        sb.append(hopPeriod).append(Lora.DIVIDER.CODE);
-        sb.append(rxPacketTimeout).append(Lora.DIVIDER.CODE);
-        sb.append(payloadLength).append(Lora.DIVIDER.CODE);
-        sb.append(preambleLength);
-        return sb.toString();
     }
 
-    public String getPropFileName() {
-        return propFileName;
-    }
-
-    public void setPropFileName(String propFileName) {
-        this.propFileName = propFileName;
+    public String getPROP_FILE_NAME() {
+        return PROP_FILE_NAME;
     }
 
     public int getCarrierFrequency() {
@@ -320,7 +316,7 @@ public class Config {
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer();
-        sb.append("Properties Filename=").append(propFileName).append(System.lineSeparator());
+        sb.append("Properties Filename=").append(PROP_FILE_NAME).append(System.lineSeparator());
         sb.append("Carrier Frequency=").append(carrierFrequency).append(System.lineSeparator());
         sb.append("Power=").append(power).append(System.lineSeparator());
         sb.append("Modulation Bandwidth=").append(modulationBandwidth).append(System.lineSeparator());

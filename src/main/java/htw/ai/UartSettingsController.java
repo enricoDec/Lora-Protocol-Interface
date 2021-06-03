@@ -93,7 +93,7 @@ public class UartSettingsController {
         try {
             config.saveConfig(config);
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Lora Setting successfully saved." + System.lineSeparator() + " To apply the settings restart.");
+            alert.setContentText("Lora Setting successfully saved." + System.lineSeparator() + "To apply the settings restart.");
             alert.show();
         } catch (IOException e) {
             e.printStackTrace();
