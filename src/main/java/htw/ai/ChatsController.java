@@ -7,6 +7,10 @@ import htw.ai.lora.LoraController;
 import htw.ai.lora.LoraDiscovery;
 import htw.ai.lora.LoraState;
 import htw.ai.lora.config.Config;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -25,6 +29,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
@@ -184,6 +189,7 @@ public class ChatsController {
 
     @FXML
     public void settingsButtonClicked(MouseEvent mouseEvent) throws IOException {
+        stop();
         App.setRoot("uartSettings");
     }
 
@@ -270,11 +276,14 @@ public class ChatsController {
         Label user = new Label(String.valueOf(CONFIG.getAddress()));
         user.setFont(new Font(10));
         user.setTextFill(Color.color(1, 1, 1));
+
         GridPane.setHalignment(user, HPos.RIGHT);
         gridPane.add(user, 0, 0);
 
         userMessages.add(gridPane);
         messageBox.getChildren().add(gridPane);
+
+        slowScrollToBottom(chatScrollPane);
     }
 
     public void displayNotUserMessage(String cmd, String cssClass, Font font) {
@@ -306,6 +315,8 @@ public class ChatsController {
         GridPane.setValignment(fontIcon, VPos.BOTTOM);
         GridPane.setHalignment(fontIcon, HPos.LEFT);
         gridPane.add(fontIcon, 0, 0);
+
+        slowScrollToBottom(chatScrollPane);
     }
 
     public static void writeToLog(String message, Color color) {
@@ -314,5 +325,12 @@ public class ChatsController {
 
     public static void writeToLog(String message) {
         System.out.println(message);
+    }
+
+    public void slowScrollToBottom(ScrollPane scrollPane) {
+        Animation animation = new Timeline(
+                new KeyFrame(Duration.seconds(2),
+                        new KeyValue(scrollPane.vvalueProperty(), 1)));
+        animation.play();
     }
 }

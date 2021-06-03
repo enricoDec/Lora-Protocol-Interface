@@ -42,6 +42,8 @@ public class Config {
 
     /**
      * Read the config file and set properties variables.
+     * If a local copy of the properties file exists it will read from it,
+     * if not it will read from the default properties file (classes res folder)
      *
      * @throws IOException thrown if any I/O error occur
      */
@@ -99,30 +101,35 @@ public class Config {
         }
     }
 
-    public void saveConfig(Config config) throws IOException {
+    /**
+     * Persist the config to a file.
+     *
+     * @throws IOException thrown if any I/O error occur
+     */
+    public void saveConfig() throws IOException {
         // Set Lora Config
-        prop.setProperty("carrierFrequency", String.valueOf(config.carrierFrequency));
-        prop.setProperty("power", String.valueOf(config.power));
-        prop.setProperty("modulationBandwidth", String.valueOf(config.modulationBandwidth));
-        prop.setProperty("spreadingFactor", String.valueOf(config.spreadingFactor));
-        prop.setProperty("errorCoding", String.valueOf(config.errorCoding));
-        prop.setProperty("crc", String.valueOf(config.crc));
-        prop.setProperty("implicitHeaderOn", String.valueOf(config.implicitHeaderOn));
-        prop.setProperty("rxSingleOn", String.valueOf(config.rxSingleOn));
-        prop.setProperty("frequencyHopOn", String.valueOf(config.frequencyHopOn));
-        prop.setProperty("hopPeriod", String.valueOf(config.hopPeriod));
-        prop.setProperty("rxPacketTimeout", String.valueOf(config.rxPacketTimeout));
-        prop.setProperty("payloadLength", String.valueOf(config.payloadLength));
-        prop.setProperty("preambleLength", String.valueOf(config.preambleLength));
+        prop.setProperty("carrierFrequency", String.valueOf(this.carrierFrequency));
+        prop.setProperty("power", String.valueOf(this.power));
+        prop.setProperty("modulationBandwidth", String.valueOf(this.modulationBandwidth));
+        prop.setProperty("spreadingFactor", String.valueOf(this.spreadingFactor));
+        prop.setProperty("errorCoding", String.valueOf(this.errorCoding));
+        prop.setProperty("crc", String.valueOf(this.crc));
+        prop.setProperty("implicitHeaderOn", String.valueOf(this.implicitHeaderOn));
+        prop.setProperty("rxSingleOn", String.valueOf(this.rxSingleOn));
+        prop.setProperty("frequencyHopOn", String.valueOf(this.frequencyHopOn));
+        prop.setProperty("hopPeriod", String.valueOf(this.hopPeriod));
+        prop.setProperty("rxPacketTimeout", String.valueOf(this.rxPacketTimeout));
+        prop.setProperty("payloadLength", String.valueOf(this.payloadLength));
+        prop.setProperty("preambleLength", String.valueOf(this.preambleLength));
 
         // Lora UART Config
-        prop.setProperty("baudRate", String.valueOf(config.baudRate));
-        prop.setProperty("parity", String.valueOf(config.parity));
-        prop.setProperty("flowControl", String.valueOf(config.flowControl));
-        prop.setProperty("numberOfStopBits", String.valueOf(config.numberOfStopBits));
-        prop.setProperty("address", String.valueOf(config.address));
-        prop.setProperty("port", String.valueOf(config.port));
-        prop.setProperty("numberOfDataBits", String.valueOf(config.numberOfDataBits));
+        prop.setProperty("baudRate", String.valueOf(this.baudRate));
+        prop.setProperty("parity", String.valueOf(this.parity));
+        prop.setProperty("flowControl", String.valueOf(this.flowControl));
+        prop.setProperty("numberOfStopBits", String.valueOf(this.numberOfStopBits));
+        prop.setProperty("address", String.valueOf(this.address));
+        prop.setProperty("port", String.valueOf(this.port));
+        prop.setProperty("numberOfDataBits", String.valueOf(this.numberOfDataBits));
 
         prop.store(new FileOutputStream(PROP_FILE_NAME), "Configuration File");
     }

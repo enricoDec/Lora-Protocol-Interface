@@ -191,13 +191,4 @@ public class LoraUART implements Runnable {
     public StringProperty newMessageProperty() {
         return newMessage;
     }
-
-    /**
-     * Get the com Port
-     *
-     * @return comPort
-     */
-    public SerialPort getComPort() {
-        return comPort;
-    }
 }

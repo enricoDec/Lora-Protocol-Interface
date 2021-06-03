@@ -207,6 +207,8 @@ public class LoraController implements Runnable {
             atConfig();
             // Get Lora version
             atGetVersion();
+            // Set Destination Address
+            atDestAddr();
             // Send something
             String hello = "Client " + config.getAddress() + " started.";
             writeQueue.put(Lora.AT_SEND.CODE + hello.length());
@@ -288,6 +290,20 @@ public class LoraController implements Runnable {
     }
 
     /**
+     * Set the destination address to FFFF
+     *
+     * @throws InterruptedException Thrown when a thread is waiting, sleeping, or otherwise occupied, and the thread is interrupted.
+     */
+    private void atDestAddr() throws InterruptedException {
+        String setDestinationAddr = Lora.AT_DEST.CODE + "FFFF";
+        ChatsController.writeToLog(setDestinationAddr);
+        writeQueue.put(setDestinationAddr);
+        replyQueue.take();
+    }
+
+    /**
+     * Send some random data
+     *
      * @param numOfBytes number of bytes to send
      */
     private void sendRandomData(int numOfBytes) {
@@ -328,10 +344,6 @@ public class LoraController implements Runnable {
         return running;
     }
 
-    public void setRunning(boolean running) {
-        this.running.set(running);
-    }
-
     public int getState() {
         return state.get();
     }
@@ -351,6 +363,4 @@ public class LoraController implements Runnable {
     public void setState(int state) {
         this.state.set(state);
     }
-
-
 }

@@ -142,8 +142,8 @@ public class LoraSettingsController {
         config.setPreambleLength(preambleLength);
 
         try {
-            config.saveConfig(config);
-            showAlert("Lora Setting successfully saved." + System.lineSeparator() + "To apply the settings restart.", Alert.AlertType.INFORMATION);
+            config.saveConfig();
+            showAlert("Lora Setting successfully saved.", Alert.AlertType.INFORMATION);
         } catch (IOException e) {
             e.printStackTrace();
         }

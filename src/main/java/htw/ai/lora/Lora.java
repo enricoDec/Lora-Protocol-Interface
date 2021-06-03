@@ -9,7 +9,6 @@ import htw.ai.ChatsController;
  * @since : 14-05-2021
  **/
 public enum Lora {
-
     // Lora Constant codes
     AT("AT"),
     LR("LR"),
@@ -57,6 +56,11 @@ public enum Lora {
         this.CODE = CODE;
     }
 
+    /**
+     * Get Lora value of String
+     * @param code lora code as String
+     * @return lora value
+     */
     public static Lora valueOfCode(String code) {
         for (Lora e : values()) {
             if (e.CODE.equals(code)) {

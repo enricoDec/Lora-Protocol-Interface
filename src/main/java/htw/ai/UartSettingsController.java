@@ -91,9 +91,9 @@ public class UartSettingsController {
         config.setPort(portInput.getText());
 
         try {
-            config.saveConfig(config);
+            config.saveConfig();
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Lora Setting successfully saved." + System.lineSeparator() + "To apply the settings restart.");
+            alert.setContentText("Lora Setting successfully saved.");
             alert.show();
         } catch (IOException e) {
             e.printStackTrace();
