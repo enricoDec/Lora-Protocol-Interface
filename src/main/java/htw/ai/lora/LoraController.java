@@ -32,7 +32,6 @@ public class LoraController implements Runnable {
     // Queue containing any other data (Not AT or LR)
     private BlockingQueue<String> unknownQueue;
     private BooleanProperty running = new SimpleBooleanProperty(false);
-    private StringProperty newMessage = new SimpleStringProperty();
 
     public LoraController(Config config, BlockingQueue<String> userInputQueue, LoraDiscovery loraDiscovery) {
         this.config = config;
@@ -44,7 +43,6 @@ public class LoraController implements Runnable {
         this.writeQueue = loraUART.getWriteQueue();
         this.replyQueue = loraUART.getReplyQueue();
         this.unknownQueue = loraUART.getUnknownQueue();
-        this.newMessage = loraUART.newMessageProperty();
     }
 
     /**
@@ -344,23 +342,8 @@ public class LoraController implements Runnable {
         return running;
     }
 
-    public int getState() {
-        return state.get();
-    }
-
     public SimpleIntegerProperty stateProperty() {
         return state;
     }
 
-    public String getNewMessage() {
-        return newMessage.get();
-    }
-
-    public StringProperty newMessageProperty() {
-        return newMessage;
-    }
-
-    public void setState(int state) {
-        this.state.set(state);
-    }
 }

@@ -56,7 +56,7 @@
     -fx-background-color: #50c984;
     -fx-text-fill: #ffffff;
     -fx-background-radius: 20px;
-    -fx-pref-width: 240;
+    -fx-max-width: 240;
 }
 
 .not-user-message {
@@ -64,7 +64,7 @@
     -fx-background-color: #ffffff;
     -fx-text-fill: -color-tertiary;
     -fx-background-radius: 20px;
-    -fx-pref-width: 240;
+    -fx-max-width: 240;
 }
 
 .client {

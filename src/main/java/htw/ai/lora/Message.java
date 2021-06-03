@@ -1,5 +1,7 @@
 package htw.ai.lora;
 
+import htw.ai.lora.config.Config;
+
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : Lora-Protocol
@@ -9,15 +11,23 @@ package htw.ai.lora;
 public class Message {
     private int sourceAddress;
     private String data;
+    private boolean isUserMessage;
 
     /**
      * Represents a received message
      *
      * @param data data received ex. LR,0012,05,Hello
      */
-    public Message(String data) {
+    public Message(String data, boolean isUserMessage) {
         this.data = data;
-        interpret();
+        if (!isUserMessage)
+            interpret();
+        else {
+            // TODO: CHANGE
+            this.sourceAddress = 12;
+            this.data = data;
+            this.isUserMessage = true;
+        }
     }
 
     /**
@@ -36,5 +46,9 @@ public class Message {
 
     public String getData() {
         return data;
+    }
+
+    public boolean isUserMessage() {
+        return isUserMessage;
     }
 }

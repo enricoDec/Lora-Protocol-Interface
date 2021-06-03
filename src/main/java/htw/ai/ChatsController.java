@@ -3,9 +3,7 @@ package htw.ai;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXToggleButton;
-import htw.ai.lora.LoraController;
-import htw.ai.lora.LoraDiscovery;
-import htw.ai.lora.LoraState;
+import htw.ai.lora.*;
 import htw.ai.lora.config.Config;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -46,12 +44,14 @@ import java.util.concurrent.BlockingQueue;
 public class ChatsController {
     private int pressed = 0;
     private LoraDiscovery loraDiscovery;
+    private Chats chats;
     private IntegerProperty newClient;
+    private StringProperty newMessage;
+    private LinkedList<HBox> chatsRoot = new LinkedList<>();
     private LoraController loraController;
     private BlockingQueue<String> userInputQueue;
     private BooleanProperty isRunning;
     private IntegerProperty state;
-    private StringProperty newMessage;
     private LinkedList<GridPane> userMessages = new LinkedList<>();
     private int currentMessage = 0;
     private FontIcon prevCheck;
@@ -103,11 +103,16 @@ public class ChatsController {
             e.printStackTrace();
         }
 
-        loraDiscovery = new LoraDiscovery();
+        // Make Objects
+        chats = new Chats();
+        loraDiscovery = new LoraDiscovery(chats);
         loraController = new LoraController(CONFIG, userInputQueue, loraDiscovery);
         Thread lora_thread = new Thread(loraController, "Lora_Thread");
         lora_thread.start();
 
+        // Create Listeners for properties
+
+        // Running property
         isRunning = loraController.runningProperty();
         isRunning.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
             if (newValue) {
@@ -123,6 +128,7 @@ public class ChatsController {
             }
         }));
 
+        // Message sent property
         state = loraController.stateProperty();
         state.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
             if (!powerToggleButton.isSelected() || userMessages.isEmpty())
@@ -147,7 +153,8 @@ public class ChatsController {
             }
         }));
 
-        newMessage = loraController.newMessageProperty();
+        // Running property
+        newMessage = chats.newClientMessageProperty();
         newMessage.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
             if (!powerToggleButton.isSelected() || newMessage.getValue().isEmpty())
                 return;
@@ -156,6 +163,7 @@ public class ChatsController {
             newMessage.set("");
         }));
 
+        // Make new Chats
         newClient = loraDiscovery.newClientProperty();
         newClient.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
             HBox clientBox = new HBox();
@@ -174,7 +182,24 @@ public class ChatsController {
             clientMessage.setWrapText(true);
             clientMessage.setTextFill(Color.WHITE);
             clientBox.getChildren().add(clientMessage);
+
+            clientBox.setOnMouseReleased(e -> {
+                loadChat(newValue.intValue());
+            });
+            chatsRoot.add(clientBox);
         }));
+    }
+
+    public void loadChat(int id) {
+        messageBox.getChildren().clear();
+
+        chats.getClientMessages(id).forEach((message) -> {
+            if (message.isUserMessage()) {
+                displayUserMessage(message.getData(), "user-message", new Font(16));
+            } else {
+                displayNotUserMessage(message.getData(), "not-user-message", new Font(16));
+            }
+        });
     }
 
     public void stop() {
@@ -245,6 +270,13 @@ public class ChatsController {
         try {
             userInputQueue.put(cmd);
 
+            if (!chats.getChatsList().isEmpty()) {
+                System.out.println("No discovered Clients");
+            } else {
+                chats.getChatsList().forEach((id, message) -> {
+                    chats.addMessageToChat(CONFIG.getAddress(), new Message(cmd, true));
+                });
+            }
             displayUserMessage(cmd, "user-message", new Font(16));
         } catch (InterruptedException e) {
             e.printStackTrace();

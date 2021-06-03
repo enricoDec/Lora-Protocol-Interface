@@ -15,17 +15,25 @@ import java.util.HashSet;
 public class LoraDiscovery {
     private HashSet<Integer> discoveryList = new HashSet<>();
     private IntegerProperty newClient = new SimpleIntegerProperty();
+    private Chats chats;
+
+    public LoraDiscovery(Chats chats) {
+        this.chats = chats;
+    }
 
     /**
      * Add a client address to the discovery list
      *
      * @param clientId address to be added
      */
-    public void addClientAddress(int clientId) {
+    public void newClient(int clientId, Message message) {
         if (!discoveryList.contains(clientId)) {
             ChatsController.writeToLog("New Client discovered " + clientId);
             discoveryList.add(clientId);
             newClient.set(clientId);
+            chats.addChat(clientId, message);
+        } else {
+            chats.addMessageToChat(clientId, message);
         }
     }
 

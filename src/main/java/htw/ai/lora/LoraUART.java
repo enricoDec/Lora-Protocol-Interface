@@ -4,8 +4,6 @@ import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
 import htw.ai.ChatsController;
 import htw.ai.lora.config.Config;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
@@ -28,8 +26,6 @@ public class LoraUART implements Runnable {
     private BlockingQueue<String> writeQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> replyQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
-    private StringProperty newMessage = new SimpleStringProperty();
-
 
     LoraUART(Config config, LoraDiscovery loraDiscovery) throws SerialPortInvalidPortException {
         comPort = SerialPort.getCommPort(config.getPort());
@@ -131,9 +127,8 @@ public class LoraUART implements Runnable {
             // Incoming messages
             else if (data.startsWith(Lora.LR.CODE)) {
                 ChatsController.writeToLog(data, Color.CYAN);
-                Message message = new Message(data);
-                newMessage.set(message.getData());
-                loraDiscovery.addClientAddress(message.getSourceAddress());
+                Message message = new Message(data, false);
+                loraDiscovery.newClient(message.getSourceAddress(), message);
             } // Unknown messages
             else {
                 ChatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);
@@ -186,9 +181,5 @@ public class LoraUART implements Runnable {
      */
     public BlockingQueue<String> getUnknownQueue() {
         return unknownQueue;
-    }
-
-    public StringProperty newMessageProperty() {
-        return newMessage;
     }
 }
