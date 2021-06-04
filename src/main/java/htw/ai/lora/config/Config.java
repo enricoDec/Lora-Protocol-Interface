@@ -90,7 +90,7 @@ public class Config {
             this.parity = Integer.parseInt(prop.getProperty("parity"));
             this.flowControl = Integer.parseInt(prop.getProperty("flowControl"));
             this.numberOfStopBits = Integer.parseInt(prop.getProperty("numberOfStopBits"));
-            this.address = Integer.parseInt(prop.getProperty("address"));
+            this.address = Integer.parseInt(prop.getProperty("address"), 16);
             if (address < 0 || address > 9999)
                 throw new InvalidPropertiesFormatException("Invalid Address");
             this.port = prop.getProperty("port");
@@ -108,6 +108,7 @@ public class Config {
      */
     public void saveConfig() throws IOException {
         // Set Lora Config
+        // TODO: Save prop file before start
         prop.setProperty("carrierFrequency", String.valueOf(this.carrierFrequency));
         prop.setProperty("power", String.valueOf(this.power));
         prop.setProperty("modulationBandwidth", String.valueOf(this.modulationBandwidth));
