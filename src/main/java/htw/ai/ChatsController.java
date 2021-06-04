@@ -270,11 +270,11 @@ public class ChatsController {
         try {
             userInputQueue.put(cmd);
 
-            if (!chats.getChatsList().isEmpty()) {
+            if (chats.getChatsList().isEmpty()) {
                 System.out.println("No discovered Clients");
             } else {
                 chats.getChatsList().forEach((id, message) -> {
-                    chats.addMessageToChat(CONFIG.getAddress(), new Message(cmd, true));
+                    chats.addMessageToChat(id, new Message(cmd, true));
                 });
             }
             displayUserMessage(cmd, "user-message", new Font(16));
