@@ -1,7 +1,5 @@
 package htw.ai.lora;
 
-import htw.ai.lora.config.Config;
-
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : Lora-Protocol

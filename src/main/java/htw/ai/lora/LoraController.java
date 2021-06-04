@@ -2,7 +2,9 @@ package htw.ai.lora;
 
 import htw.ai.ChatsController;
 import htw.ai.lora.config.Config;
-import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
