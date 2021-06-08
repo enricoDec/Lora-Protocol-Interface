@@ -90,7 +90,7 @@ public class Config {
             this.parity = Integer.parseInt(prop.getProperty("parity"));
             this.flowControl = Integer.parseInt(prop.getProperty("flowControl"));
             this.numberOfStopBits = Integer.parseInt(prop.getProperty("numberOfStopBits"));
-            this.address = Integer.parseInt(prop.getProperty("address"), 16);
+            this.address = Integer.parseInt(prop.getProperty("address"));
             if (address < 0 || address > 9999)
                 throw new InvalidPropertiesFormatException("Invalid Address");
             this.port = prop.getProperty("port");

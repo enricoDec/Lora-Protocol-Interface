@@ -12,13 +12,14 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
@@ -46,8 +47,7 @@ public class ChatsController {
     private LoraDiscovery loraDiscovery;
     private Chats chats;
     private IntegerProperty newClient;
-    private StringProperty newMessage;
-    private LinkedList<HBox> chatsRoot = new LinkedList<>();
+    private ObjectProperty<Message> newMessage;
     private LoraController loraController;
     private BlockingQueue<String> userInputQueue;
     private BooleanProperty isRunning;
@@ -56,6 +56,7 @@ public class ChatsController {
     private int currentMessage = 0;
     private FontIcon prevCheck;
     public static Config CONFIG = new Config();
+    private int currentChat = -1;
 
     @FXML
     JFXButton btnChat;
@@ -79,6 +80,8 @@ public class ChatsController {
     VBox messageBox;
     @FXML
     VBox chatList;
+    @FXML
+    ComboBox<Integer> destinationCombo;
 
     @FXML
     public void initialize() {
@@ -86,6 +89,7 @@ public class ChatsController {
         btnSendCmd.setDisable(true);
         try {
             CONFIG.readConfig();
+            CONFIG.saveConfig();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -154,13 +158,15 @@ public class ChatsController {
         }));
 
         // Running property
-        newMessage = chats.newClientMessageProperty();
+        newMessage = chats.newMessageProperty();
         newMessage.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
-            if (!powerToggleButton.isSelected() || newMessage.getValue().isEmpty())
+            if (!powerToggleButton.isSelected())
                 return;
 
-            displayNotUserMessage(newValue, "not-user-message", new Font(16));
-            newMessage.set("");
+            if (newValue.isUserMessage() && newValue.getDestinationAddress() == currentChat)
+                displayUserMessage(newValue.getData());
+            else if (newValue.getSourceAddress() == currentChat)
+                displayNotUserMessage(newValue.getData());
         }));
 
         // Make new Chats
@@ -186,25 +192,34 @@ public class ChatsController {
             clientBox.setOnMouseReleased(e -> {
                 loadChat(newValue.intValue());
             });
-            chatsRoot.add(clientBox);
         }));
+
+        // Destination Combo Box
+        for (int i = 1; i < 21; i++) {
+            destinationCombo.getItems().add(i);
+        }
     }
 
     public void loadChat(int id) {
+        currentChat = id;
         messageBox.getChildren().clear();
         chatName.setText("Chat " + id);
 
         chats.getClientMessages(id).forEach((message) -> {
             if (message.isUserMessage()) {
-                displayUserMessage(message.getData(), "user-message", new Font(16));
+                displayUserMessage(message.getData());
             } else {
-                displayNotUserMessage(message.getData(), "not-user-message", new Font(16));
+                displayNotUserMessage(message.getData());
             }
         });
     }
 
     public void stop() {
-        loraController.stop();
+        if (loraController != null && loraController.isRunning()) {
+            loraController.stop();
+            currentChat = -1;
+            messageBox.getChildren().clear();
+        }
     }
 
     public void chatButtonClicked(MouseEvent mouseEvent) {
@@ -269,28 +284,26 @@ public class ChatsController {
 
     public void sendCmd(String cmd) {
         try {
-            userInputQueue.put(cmd);
-
-            if (chats.getChatsList().isEmpty()) {
-                System.out.println("No discovered Clients");
-            } else {
-                chats.getChatsList().forEach((id, message) -> {
-                    chats.addMessageToChat(id, new Message(cmd, true));
-                });
+            if (destinationCombo.getSelectionModel().isEmpty()) {
+                alert("Please select a destination", Alert.AlertType.INFORMATION);
+                return;
             }
-            displayUserMessage(cmd, "user-message", new Font(16));
+
+            userInputQueue.put(cmd);
+            int destination = destinationCombo.selectionModelProperty().get().getSelectedItem();
+            loraDiscovery.newClient(destination, new Message(cmd, true));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    public void displayUserMessage(String cmd, String cssClass, Font font) {
+    public void displayUserMessage(String cmd) {
         // Display message
         Label message = new Label(cmd);
         message.setAlignment(Pos.CENTER);
-        message.getStyleClass().add(cssClass);
+        message.getStyleClass().add("user-message");
         message.setWrapText(true);
-        message.setFont(font);
+        message.setFont(new Font(16));
 
         GridPane gridPane = new GridPane();
         gridPane.setAlignment(Pos.CENTER_RIGHT);
@@ -319,13 +332,13 @@ public class ChatsController {
         slowScrollToBottom(chatScrollPane);
     }
 
-    public void displayNotUserMessage(String cmd, String cssClass, Font font) {
+    public void displayNotUserMessage(String cmd) {
         // Display message
         Label message = new Label(cmd);
         message.setAlignment(Pos.CENTER);
-        message.getStyleClass().add(cssClass);
+        message.getStyleClass().add("not-user-message");
         message.setWrapText(true);
-        message.setFont(font);
+        message.setFont(new Font(16));
 
         GridPane gridPane = new GridPane();
         gridPane.setAlignment(Pos.CENTER_LEFT);

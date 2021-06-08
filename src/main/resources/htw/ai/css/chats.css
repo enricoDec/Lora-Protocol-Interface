@@ -26,8 +26,8 @@
 }
 
 .search-bar {
-    -fx-text-inner-color: #ffffff;
-    -fx-prompt-text-fill: #ffffff;
+    -fx-text-inner-color: #FFFFFFFF;
+    -fx-prompt-text-fill: #FFFFFFFF;
 }
 
 .transparent-background {
@@ -47,21 +47,21 @@
 }
 
 .cmd-field {
-    -fx-text-inner-color: #ffffff;
-    -fx-prompt-text-fill: #ffffff;
+    -fx-text-inner-color: #FFFFFFFF;
+    -fx-prompt-text-fill: #FFFFFFFF;
 }
 
 .user-message {
     -fx-padding: 5;
     -fx-background-color: #50c984;
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: #FFFFFFFF;
     -fx-background-radius: 20px;
     -fx-max-width: 240;
 }
 
 .not-user-message {
     -fx-padding: 5;
-    -fx-background-color: #ffffff;
+    -fx-background-color: #FFFFFFFF;
     -fx-text-fill: -color-tertiary;
     -fx-background-radius: 20px;
     -fx-max-width: 240;
@@ -70,4 +70,20 @@
 .client {
     -fx-background-color: -color-quaternary;
     -fx-border-color: -color-primary;
+}
+
+.destination-combo {
+    -fx-text-inner-color: #FFFFFFFF;
+    -fx-background-radius: 20px;
+    -fx-background-color: -color-quaternary;
+    -fx-pref-width: 150;
+    -fx-prompt-text-fill: #FFFFFFFF;
+}
+
+.combo-box .list-view .list-cell {
+    -fx-text-fill: #000000;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: white;
 }

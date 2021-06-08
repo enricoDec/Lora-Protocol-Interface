@@ -1,5 +1,7 @@
 package htw.ai.lora;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -14,11 +16,7 @@ import java.util.LinkedList;
  **/
 public class Chats {
     private HashMap<Integer, LinkedList<Message>> chatsList = new HashMap<>();
-    private StringProperty newClientMessage = new SimpleStringProperty();
-
-    public Chats() {
-        this.newClientMessage.set("");
-    }
+    private ObjectProperty<Message> newMessage = new SimpleObjectProperty<>();
 
     /**
      * Make chat for new Client
@@ -30,7 +28,7 @@ public class Chats {
         LinkedList<Message> messages = new LinkedList<>();
         messages.add(message);
         chatsList.put(id, messages);
-        newClientMessage.set(message.getData());
+        newMessage.set(message);
     }
 
     /**
@@ -41,7 +39,7 @@ public class Chats {
      */
     public void addMessageToChat(int id, Message message) {
         chatsList.get(id).add(message);
-        newClientMessage.set(message.getData());
+        newMessage.set(message);
     }
 
     /**
@@ -64,12 +62,12 @@ public class Chats {
     }
 
     /**
-     * Get newClientMessage Property
+     * Get the new Message Property
      *
-     * @return newClientMessageProperty
+     * @return new Message Property
      */
-    public StringProperty newClientMessageProperty() {
-        return newClientMessage;
+    public ObjectProperty<Message> newMessageProperty() {
+        return newMessage;
     }
 
     /**
