@@ -108,7 +108,6 @@ public class Config {
      */
     public void saveConfig() throws IOException {
         // Set Lora Config
-        // TODO: Save prop file before start
         prop.setProperty("carrierFrequency", String.valueOf(this.carrierFrequency));
         prop.setProperty("power", String.valueOf(this.power));
         prop.setProperty("modulationBandwidth", String.valueOf(this.modulationBandwidth));

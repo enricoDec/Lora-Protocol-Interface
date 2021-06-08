@@ -192,7 +192,7 @@ public class ChatsController {
 
     public void loadChat(int id) {
         messageBox.getChildren().clear();
-        chatName.setText("Chat" + id);
+        chatName.setText("Chat " + id);
 
         chats.getClientMessages(id).forEach((message) -> {
             if (message.isUserMessage()) {

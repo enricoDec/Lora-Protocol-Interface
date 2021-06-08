@@ -166,7 +166,7 @@ public class LoraController implements Runnable {
                     if (equals)
                         loraState = LoraState.SENDED;
                     else {
-                        // TODO: Handle error
+                        ChatsController.writeToLog("Unexpected reply: AT,SENDING expected.");
                         loraState = LoraState.USER_INPUT;
                     }
                     break;
@@ -182,8 +182,7 @@ public class LoraController implements Runnable {
                     }
 
                     if (!equal)
-                        // TODO: Handle error
-                        ChatsController.writeToLog("Error");
+                        ChatsController.writeToLog("Unexpected reply: AT,SENDED expected.");
                     loraState = LoraState.USER_INPUT;
                     break;
             }
@@ -249,7 +248,7 @@ public class LoraController implements Runnable {
             // Himalaya Vendor etc..
             unknownQueue.take();
         } else {
-            // TODO: Handle error
+            ChatsController.writeToLog("Unexpected reply: AT,OK expected.");
         }
     }
 
