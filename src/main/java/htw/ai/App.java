@@ -17,11 +17,12 @@ import java.io.IOException;
 
 public class App extends Application {
     private static Scene scene;
+    private String base = "view";
 
     @Override
     public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("chats"));
-        scene.getStylesheets().add(getClass().getResource("css/chats.css").toExternalForm());
+        scene = new Scene(loadFXML(base + "/chats"));
+        scene.getStylesheets().add(getClass().getResource(base + "/css/chats.css").toExternalForm());
         stage.setScene(scene);
         stage.setMinWidth(640);
         stage.setMinHeight(360);

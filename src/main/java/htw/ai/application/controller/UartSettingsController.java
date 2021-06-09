@@ -1,4 +1,4 @@
-package htw.ai.controller;
+package htw.ai.application.controller;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
@@ -65,11 +65,11 @@ public class UartSettingsController {
     }
 
     public void back() throws IOException {
-        App.setRoot("chats");
+        App.setRoot("view/chats");
     }
 
     public void forward(MouseEvent mouseEvent) throws IOException {
-        App.setRoot("loraSettings");
+        App.setRoot("view/loraSettings");
     }
 
     public void save(MouseEvent mouseEvent) {

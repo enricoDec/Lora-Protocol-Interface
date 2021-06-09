@@ -1,4 +1,4 @@
-package htw.ai.model;
+package htw.ai.application.model;
 
 /**
  * @author : Enrico Gamil Toros de Chadarevian

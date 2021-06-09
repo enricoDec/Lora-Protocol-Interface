@@ -1,4 +1,4 @@
-package htw.ai.model;
+package htw.ai.application.model;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;

@@ -1,4 +1,4 @@
-package htw.ai.controller;
+package htw.ai.application.controller;
 
 import com.jfoenix.controls.JFXTextField;
 import htw.ai.App;
@@ -72,7 +72,7 @@ public class LoraSettingsController {
     }
 
     public void back() throws IOException {
-        App.setRoot("uartSettings");
+        App.setRoot("view/uartSettings");
     }
 
     public void save(MouseEvent mouseEvent) {

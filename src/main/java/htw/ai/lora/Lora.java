@@ -1,6 +1,6 @@
 package htw.ai.lora;
 
-import htw.ai.controller.ChatsController;
+import htw.ai.application.controller.ChatsController;
 
 /**
  * @author : Enrico Gamil Toros de Chadarevian

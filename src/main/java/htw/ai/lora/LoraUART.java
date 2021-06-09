@@ -2,10 +2,10 @@ package htw.ai.lora;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
-import htw.ai.controller.ChatsController;
+import htw.ai.application.controller.ChatsController;
 import htw.ai.lora.config.Config;
-import htw.ai.model.ClientMessage;
-import htw.ai.model.LoraDiscovery;
+import htw.ai.application.model.ClientMessage;
+import htw.ai.application.model.LoraDiscovery;
 import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;

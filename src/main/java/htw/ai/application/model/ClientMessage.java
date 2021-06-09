@@ -1,4 +1,4 @@
-package htw.ai.model;
+package htw.ai.application.model;
 
 import htw.ai.lora.Lora;
 

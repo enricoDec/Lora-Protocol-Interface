@@ -1,4 +1,4 @@
-package htw.ai.controller;
+package htw.ai.application.controller;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
@@ -7,10 +7,10 @@ import htw.ai.App;
 import htw.ai.lora.LoraController;
 import htw.ai.lora.LoraState;
 import htw.ai.lora.config.Config;
-import htw.ai.model.Chats;
-import htw.ai.model.ClientMessage;
-import htw.ai.model.LoraDiscovery;
-import htw.ai.model.UserMessage;
+import htw.ai.application.model.Chats;
+import htw.ai.application.model.ClientMessage;
+import htw.ai.application.model.LoraDiscovery;
+import htw.ai.application.model.UserMessage;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -242,7 +242,7 @@ public class ChatsController {
     @FXML
     public void settingsButtonClicked(MouseEvent mouseEvent) throws IOException {
         stop();
-        App.setRoot("uartSettings");
+        App.setRoot("view/uartSettings");
     }
 
     public void powerToggleClicked(MouseEvent mouseEvent) {
