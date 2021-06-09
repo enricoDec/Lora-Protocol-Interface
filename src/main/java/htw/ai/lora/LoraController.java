@@ -1,7 +1,8 @@
 package htw.ai.lora;
 
-import htw.ai.ChatsController;
+import htw.ai.controller.ChatsController;
 import htw.ai.lora.config.Config;
+import htw.ai.model.LoraDiscovery;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;

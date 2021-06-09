@@ -14,4 +14,6 @@ module LoraProtocolInterface {
 
     exports htw.ai;
     opens htw.ai to javafx.graphics, javafx.fxml;
+    exports htw.ai.controller;
+    opens htw.ai.controller to javafx.fxml, javafx.graphics;
 }

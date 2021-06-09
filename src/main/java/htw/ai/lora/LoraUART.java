@@ -2,8 +2,10 @@ package htw.ai.lora;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
-import htw.ai.ChatsController;
+import htw.ai.controller.ChatsController;
 import htw.ai.lora.config.Config;
+import htw.ai.model.ClientMessage;
+import htw.ai.model.LoraDiscovery;
 import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
@@ -127,8 +129,8 @@ public class LoraUART implements Runnable {
             // Incoming messages
             else if (data.startsWith(Lora.LR.CODE)) {
                 ChatsController.writeToLog(data, Color.CYAN);
-                Message message = new Message(data, false);
-                loraDiscovery.newClient(message.getSourceAddress(), message);
+                ClientMessage message = new ClientMessage(data);
+                loraDiscovery.newClient(message);
             } // Unknown messages
             else {
                 ChatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);

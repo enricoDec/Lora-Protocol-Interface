@@ -1,10 +1,16 @@
-package htw.ai;
+package htw.ai.controller;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXToggleButton;
-import htw.ai.lora.*;
+import htw.ai.App;
+import htw.ai.lora.LoraController;
+import htw.ai.lora.LoraState;
 import htw.ai.lora.config.Config;
+import htw.ai.model.Chats;
+import htw.ai.model.ClientMessage;
+import htw.ai.model.LoraDiscovery;
+import htw.ai.model.UserMessage;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -47,7 +53,7 @@ public class ChatsController {
     private LoraDiscovery loraDiscovery;
     private Chats chats;
     private IntegerProperty newClient;
-    private ObjectProperty<Message> newMessage;
+    private ObjectProperty<ClientMessage> newMessage;
     private LoraController loraController;
     private BlockingQueue<String> userInputQueue;
     private BooleanProperty isRunning;
@@ -157,13 +163,13 @@ public class ChatsController {
             }
         }));
 
-        // Running property
+        // New Message property
         newMessage = chats.newMessageProperty();
         newMessage.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
             if (!powerToggleButton.isSelected())
                 return;
 
-            if (newValue.isUserMessage() && newValue.getDestinationAddress() == currentChat)
+            if (newValue instanceof UserMessage && newValue.getDestinationAddress() == currentChat)
                 displayUserMessage(newValue.getData());
             else if (newValue.getSourceAddress() == currentChat)
                 displayNotUserMessage(newValue.getData());
@@ -189,8 +195,11 @@ public class ChatsController {
             clientMessage.setTextFill(Color.WHITE);
             clientBox.getChildren().add(clientMessage);
 
+            loadChat(newValue.intValue());
+
             clientBox.setOnMouseReleased(e -> {
-                loadChat(newValue.intValue());
+                if (currentChat != newValue.intValue())
+                    loadChat(newValue.intValue());
             });
         }));
 
@@ -206,12 +215,13 @@ public class ChatsController {
         chatName.setText("Chat " + id);
 
         chats.getClientMessages(id).forEach((message) -> {
-            if (message.isUserMessage()) {
+            if (message instanceof UserMessage) {
                 displayUserMessage(message.getData());
             } else {
                 displayNotUserMessage(message.getData());
             }
         });
+        destinationCombo.getSelectionModel().select(id - 1);
     }
 
     public void stop() {
@@ -219,6 +229,7 @@ public class ChatsController {
             loraController.stop();
             currentChat = -1;
             messageBox.getChildren().clear();
+            chatList.getChildren().clear();
         }
     }
 
@@ -252,7 +263,7 @@ public class ChatsController {
         if (keyEvent.getCode() == KeyCode.ENTER && !cmdInputTextField.getText().isEmpty()) {
             String userInput = cmdInputTextField.getText().trim();
             cmdInputTextField.setText("");
-            sendCmd(userInput);
+            sendData(userInput);
         } else if (keyEvent.getCode() == KeyCode.ENTER) {
             pressed++;
             if (pressed > 20) {
@@ -266,7 +277,7 @@ public class ChatsController {
         if (!cmdInputTextField.getText().isEmpty()) {
             String userInput = cmdInputTextField.getText().trim();
             cmdInputTextField.setText("");
-            sendCmd(userInput);
+            sendData(userInput);
         } else {
             pressed++;
             if (pressed > 20) {
@@ -282,16 +293,16 @@ public class ChatsController {
         a.show();
     }
 
-    public void sendCmd(String cmd) {
+    public void sendData(String data) {
         try {
             if (destinationCombo.getSelectionModel().isEmpty()) {
                 alert("Please select a destination", Alert.AlertType.INFORMATION);
                 return;
             }
 
-            userInputQueue.put(cmd);
+            userInputQueue.put(data);
             int destination = destinationCombo.selectionModelProperty().get().getSelectedItem();
-            loraDiscovery.newClient(destination, new Message(cmd, true));
+            loraDiscovery.newClient(new UserMessage(data, CONFIG.getAddress(), destination));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

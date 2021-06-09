@@ -1,9 +1,7 @@
-package htw.ai.lora;
+package htw.ai.model;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -15,8 +13,8 @@ import java.util.LinkedList;
  * @since : 31-05-2021
  **/
 public class Chats {
-    private HashMap<Integer, LinkedList<Message>> chatsList = new HashMap<>();
-    private ObjectProperty<Message> newMessage = new SimpleObjectProperty<>();
+    private HashMap<Integer, LinkedList<ClientMessage>> chatsList = new HashMap<>();
+    private ObjectProperty<ClientMessage> newMessage = new SimpleObjectProperty<>();
 
     /**
      * Make chat for new Client
@@ -24,11 +22,12 @@ public class Chats {
      * @param id      client id (Address)
      * @param message client message to add
      */
-    public void addChat(int id, Message message) {
-        LinkedList<Message> messages = new LinkedList<>();
+    public void addChat(int id, ClientMessage message, boolean triggerListener) {
+        LinkedList<ClientMessage> messages = new LinkedList<>();
         messages.add(message);
         chatsList.put(id, messages);
-        newMessage.set(message);
+        if (triggerListener)
+            newMessage.set(message);
     }
 
     /**
@@ -37,7 +36,7 @@ public class Chats {
      * @param id      client id (Address)
      * @param message client message to add
      */
-    public void addMessageToChat(int id, Message message) {
+    public void addMessageToChat(int id, ClientMessage message) {
         chatsList.get(id).add(message);
         newMessage.set(message);
     }
@@ -57,7 +56,7 @@ public class Chats {
      * @param id client id (Address)
      * @return List of all Messages from given Client
      */
-    public LinkedList<Message> getClientMessages(int id) {
+    public LinkedList<ClientMessage> getClientMessages(int id) {
         return chatsList.get(id);
     }
 
@@ -66,7 +65,7 @@ public class Chats {
      *
      * @return new Message Property
      */
-    public ObjectProperty<Message> newMessageProperty() {
+    public ObjectProperty<ClientMessage> newMessageProperty() {
         return newMessage;
     }
 
@@ -75,7 +74,15 @@ public class Chats {
      *
      * @return HashMap<Integer, LinkedList < Message>>
      */
-    public HashMap<Integer, LinkedList<Message>> getChatsList() {
+    public HashMap<Integer, LinkedList<ClientMessage>> getChatsList() {
         return chatsList;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer();
+        sb.append("chatsList=").append(chatsList);
+        sb.append(", message=").append(newMessage.toString());
+        return sb.toString();
     }
 }

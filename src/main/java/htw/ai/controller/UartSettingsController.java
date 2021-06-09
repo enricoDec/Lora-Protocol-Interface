@@ -1,7 +1,8 @@
-package htw.ai;
+package htw.ai.controller;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
+import htw.ai.App;
 import htw.ai.lora.config.Config;
 import htw.ai.lora.config.Flowcontrol;
 import htw.ai.lora.config.Parity;

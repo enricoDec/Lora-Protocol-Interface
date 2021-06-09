@@ -1,6 +1,7 @@
-package htw.ai;
+package htw.ai.controller;
 
 import com.jfoenix.controls.JFXTextField;
+import htw.ai.App;
 import htw.ai.lora.config.Config;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
