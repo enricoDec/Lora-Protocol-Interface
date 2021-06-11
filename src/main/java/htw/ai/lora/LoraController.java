@@ -1,16 +1,18 @@
 package htw.ai.lora;
 
 import htw.ai.application.controller.ChatsController;
-import htw.ai.lora.config.Config;
+import htw.ai.application.model.ClientMessage;
 import htw.ai.application.model.LoraDiscovery;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import htw.ai.lora.config.Config;
+import htw.ai.protocoll.message.Message;
 import javafx.beans.property.SimpleIntegerProperty;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author : Enrico Gamil Toros de Chadarevian
@@ -27,19 +29,19 @@ public class LoraController implements Runnable {
     private LoraUART loraUART;
     private final Config config;
     // Queue containing user input data
-    private BlockingQueue<String> userInputQueue;
+    private BlockingQueue<String> messagesQueue;
     // Queue containing data to write
     private BlockingQueue<String> writeQueue;
     // Queue containing reply data from lora module
     private BlockingQueue<String> replyQueue;
     // Queue containing any other data (Not AT or LR)
     private BlockingQueue<String> unknownQueue;
-    private BooleanProperty running = new SimpleBooleanProperty(false);
+    private AtomicBoolean isRunning = new AtomicBoolean(false);
+    private BlockingQueue<ClientMessage> lrQueue = new ArrayBlockingQueue<>(20);
 
-    public LoraController(Config config, BlockingQueue<String> userInputQueue, LoraDiscovery loraDiscovery) {
+    public LoraController(Config config, LoraDiscovery loraDiscovery, BlockingQueue<String> messagesQueue) {
         this.config = config;
-        this.userInputQueue = userInputQueue;
-        this.loraDiscovery = loraDiscovery;
+        this.messagesQueue = messagesQueue;
         this.loraState = LoraState.START;
 
         this.loraUART = new LoraUART(config, loraDiscovery);
@@ -51,26 +53,25 @@ public class LoraController implements Runnable {
     /**
      * Start Thread
      */
-    public void start() {
-        if (running.get())
+    public boolean initialize() {
+        if (isRunning.get())
             ChatsController.writeToLog("Controller already running!");
         else {
-            running.set(true);
+            isRunning.set(true);
             loraUART_thread = new Thread(loraUART, "loraUART_thread");
+            boolean portOpened = loraUART.initialize();
             loraUART_thread.start();
-            boolean portOpened = loraUART.start();
 
-            if (!portOpened) {
-                stop();
-            }
+            return portOpened;
         }
+        return true;
     }
 
     /**
      * Stop Thread
      */
     public void stop() {
-        if (!running.get())
+        if (!isRunning.get())
             ChatsController.writeToLog("Controller already stopped!");
         else {
             loraUART.stop();
@@ -80,8 +81,7 @@ public class LoraController implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            running.set(false);
-            ChatsController.writeToLog("Lora Controller Thread ended");
+            isRunning.set(false);
         }
     }
 
@@ -90,11 +90,8 @@ public class LoraController implements Runnable {
      */
     @Override
     public void run() {
-        // Start UART Thread
-        start();
-
         Lora replyCode;
-        while (running.get()) {
+        while (isRunning.get()) {
             state.set(loraState.ordinal());
             switch (loraState) {
                 // Start State Menu
@@ -106,7 +103,7 @@ public class LoraController implements Runnable {
                     String dataToSend = "";
                     try {
                         // Wait for user Input
-                        dataToSend = userInputQueue.take();
+                        dataToSend = messagesQueue.take();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -336,16 +333,7 @@ public class LoraController implements Runnable {
         return equals;
     }
 
-    public boolean isRunning() {
-        return running.get();
+    public BlockingQueue<ClientMessage> getLrQueue() {
+        return loraUART.getLrQueue();
     }
-
-    public BooleanProperty runningProperty() {
-        return running;
-    }
-
-    public SimpleIntegerProperty stateProperty() {
-        return state;
-    }
-
 }

@@ -40,6 +40,9 @@ public class Config {
     // Lora properties
     private int address;
 
+    public Config() {
+    }
+
     /**
      * Read the config file and set properties variables.
      * If a local copy of the properties file exists it will read from it,

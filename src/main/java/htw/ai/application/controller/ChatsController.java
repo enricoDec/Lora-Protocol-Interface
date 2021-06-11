@@ -4,13 +4,12 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXToggleButton;
 import htw.ai.App;
-import htw.ai.lora.LoraController;
-import htw.ai.lora.LoraState;
-import htw.ai.lora.config.Config;
 import htw.ai.application.model.Chats;
 import htw.ai.application.model.ClientMessage;
 import htw.ai.application.model.LoraDiscovery;
 import htw.ai.application.model.UserMessage;
+import htw.ai.lora.config.Config;
+import htw.ai.protocoll.AodvController;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -54,15 +53,13 @@ public class ChatsController {
     private Chats chats;
     private IntegerProperty newClient;
     private ObjectProperty<ClientMessage> newMessage;
-    private LoraController loraController;
     private BlockingQueue<String> userInputQueue;
     private BooleanProperty isRunning;
-    private IntegerProperty state;
     private LinkedList<GridPane> userMessages = new LinkedList<>();
-    private int currentMessage = 0;
-    private FontIcon prevCheck;
     public static Config CONFIG = new Config();
     private int currentChat = -1;
+    private AodvController aodvController;
+    private Thread aodv_thread;
 
     @FXML
     JFXButton btnChat;
@@ -113,55 +110,50 @@ public class ChatsController {
             e.printStackTrace();
         }
 
-        // Make Objects
+        // Initialize all Threads and start them
+        // Main Thread -> AodvController -> LoraController -> UartController
         chats = new Chats();
         loraDiscovery = new LoraDiscovery(chats);
-        loraController = new LoraController(CONFIG, userInputQueue, loraDiscovery);
-        Thread lora_thread = new Thread(loraController, "Lora_Thread");
-        lora_thread.start();
+        aodvController = new AodvController(userInputQueue, CONFIG, loraDiscovery);
+        aodv_thread = new Thread(aodvController, "AODV_Thread");
+        boolean portOpen = aodvController.initialize();
+        if (!portOpen) {
+            powerToggleButton.setText("Off");
+            powerToggleButton.setSelected(false);
+            cmdInputTextField.setDisable(true);
+            btnSendCmd.setDisable(true);
+            alert("Could not open port " + CONFIG.getPort(), Alert.AlertType.ERROR);
+            return;
+        }
+
+        aodv_thread.start();
 
         // Create Listeners for properties
 
-        // Running property
-        isRunning = loraController.runningProperty();
-        isRunning.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
-            if (newValue) {
-                powerToggleButton.setText("On");
-                powerToggleButton.setSelected(true);
-                cmdInputTextField.setDisable(false);
-                btnSendCmd.setDisable(false);
-            } else {
-                powerToggleButton.setText("Off");
-                powerToggleButton.setSelected(false);
-                cmdInputTextField.setDisable(true);
-                btnSendCmd.setDisable(true);
-            }
-        }));
-
         // Message sent property
-        state = loraController.stateProperty();
-        state.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
-            if (!powerToggleButton.isSelected() || userMessages.isEmpty())
-                return;
-            if (newValue.intValue() == LoraState.SENDING.ordinal()) {
-                FontIcon fontIcon = new FontIcon("bi-check2");
-                fontIcon.setIconColor(Color.WHITE);
-                fontIcon.setFont(new Font(12));
-                GridPane.setValignment(fontIcon, VPos.BOTTOM);
-                GridPane.setHalignment(fontIcon, HPos.LEFT);
-                userMessages.get(currentMessage).add(fontIcon, 2, 0);
-                prevCheck = fontIcon;
-            } else if (newValue.intValue() == LoraState.SENDED.ordinal()) {
-                FontIcon fontIcon = new FontIcon("bi-check2-all");
-                fontIcon.setFont(new Font(12));
-                fontIcon.setIconColor(Color.WHITE);
-                GridPane.setValignment(fontIcon, VPos.BOTTOM);
-                GridPane.setHalignment(fontIcon, HPos.LEFT);
-                userMessages.get(currentMessage).getChildren().remove(prevCheck);
-                userMessages.get(currentMessage).add(fontIcon, 2, 0);
-                currentMessage++;
-            }
-        }));
+//        state = loraController.stateProperty();
+//        state.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
+//            if (!powerToggleButton.isSelected() || userMessages.isEmpty())
+//                return;
+//            if (newValue.intValue() == LoraState.SENDING.ordinal()) {
+//                FontIcon fontIcon = new FontIcon("bi-check2");
+//                fontIcon.setIconColor(Color.WHITE);
+//                fontIcon.setFont(new Font(12));
+//                GridPane.setValignment(fontIcon, VPos.BOTTOM);
+//                GridPane.setHalignment(fontIcon, HPos.LEFT);
+//                userMessages.get(currentMessage).add(fontIcon, 2, 0);
+//                prevCheck = fontIcon;
+//            } else if (newValue.intValue() == LoraState.SENDED.ordinal()) {
+//                FontIcon fontIcon = new FontIcon("bi-check2-all");
+//                fontIcon.setFont(new Font(12));
+//                fontIcon.setIconColor(Color.WHITE);
+//                GridPane.setValignment(fontIcon, VPos.BOTTOM);
+//                GridPane.setHalignment(fontIcon, HPos.LEFT);
+//                userMessages.get(currentMessage).getChildren().remove(prevCheck);
+//                userMessages.get(currentMessage).add(fontIcon, 2, 0);
+//                currentMessage++;
+//            }
+//        }));
 
         // New Message property
         newMessage = chats.newMessageProperty();
@@ -225,8 +217,14 @@ public class ChatsController {
     }
 
     public void stop() {
-        if (loraController != null && loraController.isRunning()) {
-            loraController.stop();
+        if (aodvController != null && aodvController.getIsRunning().get()) {
+            aodvController.stop();
+            try {
+                aodv_thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            writeToLog("AODV Controller Thread ended");
             currentChat = -1;
             messageBox.getChildren().clear();
             chatList.getChildren().clear();
@@ -377,7 +375,14 @@ public class ChatsController {
     }
 
     public static void writeToLog(String message, Color color) {
+        if (color == Color.DARKRED)
+            System.out.print("\033[1;31m");
+        else if (color == Color.CYAN)
+            System.out.print("\033[1;36m");
+        else if (color == Color.YELLOW)
+            System.out.print("\033[1;33m");
         System.out.println(message);
+        System.out.print("\033[0m");
     }
 
     public static void writeToLog(String message) {

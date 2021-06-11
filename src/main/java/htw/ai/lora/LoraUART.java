@@ -3,9 +3,9 @@ package htw.ai.lora;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
 import htw.ai.application.controller.ChatsController;
-import htw.ai.lora.config.Config;
 import htw.ai.application.model.ClientMessage;
 import htw.ai.application.model.LoraDiscovery;
+import htw.ai.lora.config.Config;
 import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
@@ -28,6 +28,7 @@ public class LoraUART implements Runnable {
     private BlockingQueue<String> writeQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> replyQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
+    private BlockingQueue<ClientMessage> lrQueue = new ArrayBlockingQueue<>(20);
 
     LoraUART(Config config, LoraDiscovery loraDiscovery) throws SerialPortInvalidPortException {
         comPort = SerialPort.getCommPort(config.getPort());
@@ -46,7 +47,7 @@ public class LoraUART implements Runnable {
      *
      * @return false if port not opened, else true
      */
-    boolean start() {
+    boolean initialize() {
         if (running.get())
             ChatsController.writeToLog("LoraUART already running!");
         else {
@@ -131,6 +132,7 @@ public class LoraUART implements Runnable {
                 ChatsController.writeToLog(data, Color.CYAN);
                 ClientMessage message = new ClientMessage(data);
                 loraDiscovery.newClient(message);
+                lrQueue.put(message);
             } // Unknown messages
             else {
                 ChatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);
@@ -159,7 +161,7 @@ public class LoraUART implements Runnable {
      *
      * @return reference to the write queue
      */
-    public BlockingQueue<String> getWriteQueue() {
+    BlockingQueue<String> getWriteQueue() {
         return writeQueue;
     }
 
@@ -170,7 +172,7 @@ public class LoraUART implements Runnable {
      *
      * @return reference to the reply queue
      */
-    public BlockingQueue<String> getReplyQueue() {
+    BlockingQueue<String> getReplyQueue() {
         return replyQueue;
     }
 
@@ -181,7 +183,11 @@ public class LoraUART implements Runnable {
      *
      * @return reference to the unknown queue
      */
-    public BlockingQueue<String> getUnknownQueue() {
+    BlockingQueue<String> getUnknownQueue() {
         return unknownQueue;
+    }
+
+    BlockingQueue<ClientMessage> getLrQueue() {
+        return lrQueue;
     }
 }

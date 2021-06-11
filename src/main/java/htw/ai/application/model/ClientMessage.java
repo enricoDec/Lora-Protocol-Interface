@@ -2,6 +2,8 @@ package htw.ai.application.model;
 
 import htw.ai.lora.Lora;
 
+import java.util.Arrays;
+
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : Lora-Protocol
@@ -35,8 +37,7 @@ public class ClientMessage{
         String[] dataSplit = data.split(Lora.DIVIDER.CODE);
         // 0-> LR 1-> source address 2-> bytes number 3-> data
         this.sourceAddress = Integer.parseInt(dataSplit[1]);
-        // TODO: Get destination
-        this.data = dataSplit[3];
+        this.data = Arrays.toString(Arrays.copyOfRange(dataSplit, 3, dataSplit.length));
     }
 
     public int getSourceAddress() {
