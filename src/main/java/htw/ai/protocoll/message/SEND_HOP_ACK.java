@@ -21,4 +21,9 @@ public class SEND_HOP_ACK extends Message {
     public void setMessageSequenceNumber(byte messageSequenceNumber) {
         this.messageSequenceNumber = messageSequenceNumber;
     }
+
+    @Override
+    public byte[] toMessage() {
+        return null;
+    }
 }

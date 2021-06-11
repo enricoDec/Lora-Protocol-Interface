@@ -9,6 +9,7 @@ import htw.ai.lora.config.Config;
 import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,7 +26,10 @@ public class LoraUART implements Runnable {
     private final Config config;
     private final LoraDiscovery loraDiscovery;
     private final SerialPort comPort;
-    private BlockingQueue<String> writeQueue = new ArrayBlockingQueue<>(20);
+    // message Queue contains payload (after AT+SEND=x)
+    private BlockingQueue<byte[]> messageQueue = new ArrayBlockingQueue<>(20);
+    // writeQueue contains AT Commands
+    private BlockingQueue<String> commandQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> replyQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<ClientMessage> lrQueue = new ArrayBlockingQueue<>(20);
@@ -81,32 +85,28 @@ public class LoraUART implements Runnable {
         // Only if new data needs to be written to Serial Port it will switch to write
         while (running.get()) {
             // If no data to be written continue to poll Serial Port
-            if (writeQueue.isEmpty()) {
+            if (!commandQueue.isEmpty()) {
                 try {
-                    read();
+                    write(commandQueue.take());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            } else {
-                // If new data to write switch to writing
-                String dataToWrite = "";
-                try {
-                    // Get data and convert to byte[]
-                    dataToWrite = this.writeQueue.take();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                write(dataToWrite);
             }
+            if (!messageQueue.isEmpty()) {
+                try {
+                    write(messageQueue.take());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            read();
         }
     }
 
     /**
-     * Write data to Serial Port
-     *
-     * @throws InterruptedException Thrown when a thread is waiting, sleeping, or otherwise occupied, and the thread is interrupted, either before or during the activity.
+     * Read data to Serial Port
      */
-    private synchronized void read() throws InterruptedException {
+    private synchronized void read() {
         String data = "";
         byte[] byteData;
         // Not sure about timeout
@@ -124,19 +124,30 @@ public class LoraUART implements Runnable {
             // Remove EOF
             data = data.substring(0, data.length() - 2);
             if (data.startsWith(Lora.AT.CODE)) {
-                ChatsController.writeToLog(data, Color.YELLOW);
-                replyQueue.put(data);
+                try {
+                    replyQueue.put(data);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             // Incoming messages
             else if (data.startsWith(Lora.LR.CODE)) {
                 ChatsController.writeToLog(data, Color.CYAN);
                 ClientMessage message = new ClientMessage(data);
                 loraDiscovery.newClient(message);
-                lrQueue.put(message);
+                try {
+                    lrQueue.put(message);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             } // Unknown messages
             else {
                 ChatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);
-                unknownQueue.put(data);
+                try {
+                    unknownQueue.put(data);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -148,10 +159,24 @@ public class LoraUART implements Runnable {
      */
     private synchronized void write(String data) {
         byte[] dataWithEOF = (data + Lora.EOF.CODE).getBytes(StandardCharsets.UTF_8);
-
-        // Not really sure about timeout
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         comPort.writeBytes(dataWithEOF, dataWithEOF.length);
+
+        ChatsController.writeToLog(data, Color.YELLOW);
+    }
+
+    /**
+     * Send data to serial Port
+     *
+     * @param data Data to be send. <b>Has to be UTF-8 encoded without new line or carriage return.</b>
+     */
+    private synchronized void write(byte[] data) {
+        byte[] eof = Lora.EOF.CODE.getBytes(StandardCharsets.US_ASCII);
+        byte[] buffer = new byte[data.length + eof.length];
+        System.arraycopy(data, 0, buffer, 0, data.length);
+        System.arraycopy(eof, 0, buffer, data.length, eof.length);
+        comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
+        comPort.writeBytes(buffer, buffer.length);
     }
 
     /**
@@ -161,8 +186,12 @@ public class LoraUART implements Runnable {
      *
      * @return reference to the write queue
      */
-    BlockingQueue<String> getWriteQueue() {
-        return writeQueue;
+    BlockingQueue<String> getCommandQueue() {
+        return commandQueue;
+    }
+
+    public BlockingQueue<byte[]> getMessageQueue() {
+        return messageQueue;
     }
 
     /**

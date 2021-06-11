@@ -53,7 +53,7 @@ public class ChatsController {
     private Chats chats;
     private IntegerProperty newClient;
     private ObjectProperty<ClientMessage> newMessage;
-    private BlockingQueue<String> userInputQueue;
+    private BlockingQueue<UserMessage> userInputQueue;
     private BooleanProperty isRunning;
     private LinkedList<GridPane> userMessages = new LinkedList<>();
     public static Config CONFIG = new Config();
@@ -251,6 +251,9 @@ public class ChatsController {
             powerToggleButton.setDisable(true);
             start();
         } else {
+            powerToggleButton.setText("Off");
+            cmdInputTextField.setDisable(true);
+            btnSendCmd.setDisable(true);
             powerToggleButton.setDisable(true);
             stop();
         }
@@ -298,9 +301,10 @@ public class ChatsController {
                 return;
             }
 
-            userInputQueue.put(data);
             int destination = destinationCombo.selectionModelProperty().get().getSelectedItem();
-            loraDiscovery.newClient(new UserMessage(data, CONFIG.getAddress(), destination));
+            UserMessage userMessage = new UserMessage(data, CONFIG.getAddress(), destination);
+            loraDiscovery.newClient(userMessage);
+            userInputQueue.put(userMessage);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

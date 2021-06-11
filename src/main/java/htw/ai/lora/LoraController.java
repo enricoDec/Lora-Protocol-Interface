@@ -29,23 +29,25 @@ public class LoraController implements Runnable {
     private LoraUART loraUART;
     private final Config config;
     // Queue containing user input data
-    private BlockingQueue<String> messagesQueue;
-    // Queue containing data to write
+    private BlockingQueue<Message> messagesQueue;
+    // Queue containing commands to write
     private BlockingQueue<String> writeQueue;
+    private BlockingQueue<byte[]> payloadQueue;
     // Queue containing reply data from lora module
     private BlockingQueue<String> replyQueue;
     // Queue containing any other data (Not AT or LR)
     private BlockingQueue<String> unknownQueue;
-    private AtomicBoolean isRunning = new AtomicBoolean(false);
     private BlockingQueue<ClientMessage> lrQueue = new ArrayBlockingQueue<>(20);
+    private AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    public LoraController(Config config, LoraDiscovery loraDiscovery, BlockingQueue<String> messagesQueue) {
+    public LoraController(Config config, LoraDiscovery loraDiscovery, BlockingQueue<Message> messagesQueue) {
         this.config = config;
         this.messagesQueue = messagesQueue;
         this.loraState = LoraState.START;
 
         this.loraUART = new LoraUART(config, loraDiscovery);
-        this.writeQueue = loraUART.getWriteQueue();
+        this.writeQueue = loraUART.getCommandQueue();
+        this.payloadQueue = loraUART.getMessageQueue();
         this.replyQueue = loraUART.getReplyQueue();
         this.unknownQueue = loraUART.getUnknownQueue();
     }
@@ -100,38 +102,45 @@ public class LoraController implements Runnable {
                     loraState = LoraState.USER_INPUT;
                     break;
                 case USER_INPUT:
-                    String dataToSend = "";
+                    String atCommand = null;
+                    byte[] messageBytes = null;
                     try {
                         // Wait for user Input
-                        dataToSend = messagesQueue.take();
+                        Message message = messagesQueue.poll(1, TimeUnit.SECONDS);
+                        if (message == null)
+                            return;
+                        // Type 0 not a message (at command)
+                        if (message.getTYPE() == (byte) 0)
+                            atCommand = message.toString();
+                        else
+                            messageBytes = message.toMessage();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-
                     // If no AT command -> AT+SEND
-                    if (!dataToSend.startsWith(Lora.AT.CODE)) {
+                    if (messageBytes != null) {
                         // Get number of bytes to send
-                        int bytesToSend = dataToSend.strip().length();
+                        int bytesToSend = messageBytes.length;
                         try {
                             // Send AT+SEND=bytesToSend
                             writeQueue.put(Lora.AT_SEND.CODE + bytesToSend);
                             // Check reply code
                             replyCode = Lora.valueOfCode(replyQueue.take());
-                            checkReplyCode(Lora.AT_SEND, replyCode, Lora.REPLY_OK);
-                            writeQueue.put(dataToSend.strip());
+                            checkReplyCode(replyCode, Lora.REPLY_OK);
+                            payloadQueue.put(messageBytes);
                             loraState = LoraState.SENDING;
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                    } else if (dataToSend.startsWith(Lora.AT.CODE)) {
+                    } else if (atCommand != null) {
                         try {
-                            writeQueue.put(dataToSend);
+                            writeQueue.put(atCommand);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                         loraState = LoraState.WAIT_REPLY;
                     } else {
-                        ChatsController.writeToLog(dataToSend + " not a valid input!");
+                        ChatsController.writeToLog(atCommand + " not a valid input!");
                         loraState = LoraState.USER_INPUT;
                     }
                     break;
@@ -146,8 +155,6 @@ public class LoraController implements Runnable {
 
                     if (replyCode.CODE.startsWith(Lora.ERR_GENERAL.CODE)) {
                         ChatsController.writeToLog("Error " + replyCode.CODE);
-                    } else {
-                        ChatsController.writeToLog(replyCode.CODE);
                     }
                     loraState = LoraState.USER_INPUT;
                     break;
@@ -156,7 +163,7 @@ public class LoraController implements Runnable {
                     boolean equals = false;
                     try {
                         replyCode = Lora.valueOfCode(replyQueue.take());
-                        equals = checkReplyCode(Lora.AT_SEND, replyCode, Lora.REPLY_SENDING);
+                        equals = checkReplyCode(replyCode, Lora.REPLY_SENDING);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -173,7 +180,7 @@ public class LoraController implements Runnable {
                     boolean equal = false;
                     try {
                         replyCode = Lora.valueOfCode(replyQueue.take());
-                        equal = checkReplyCode(Lora.AT_SEND, replyCode, Lora.REPLY_SENDED);
+                        equal = checkReplyCode(replyCode, Lora.REPLY_SENDED);
                         loraState = LoraState.USER_INPUT;
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -228,7 +235,6 @@ public class LoraController implements Runnable {
     private void atRST() throws InterruptedException {
         // Send AT+RST to Lora
         String reset = Lora.AT_RST.CODE;
-        ChatsController.writeToLog(reset);
         writeQueue.put(reset);
         // Wait for reply with timeout
         int timeoutInMillis = 5000;
@@ -242,7 +248,7 @@ public class LoraController implements Runnable {
             atRST();
         }
 
-        if (checkReplyCode(Lora.AT_RST, Lora.valueOfCode(replyCode), Lora.REPLY_OK)) {
+        if (checkReplyCode(Lora.valueOfCode(replyCode), Lora.REPLY_OK)) {
             // Himalaya Vendor etc..
             unknownQueue.take();
         } else {
@@ -257,9 +263,8 @@ public class LoraController implements Runnable {
      */
     private void atSetAddr() throws InterruptedException {
         String setAddr = Lora.AT_ADDR_SET.CODE + config.getAddress();
-        ChatsController.writeToLog(setAddr);
         writeQueue.put(setAddr);
-        checkReplyCode(Lora.AT_ADDR_SET, Lora.valueOfCode(replyQueue.take()), Lora.REPLY_OK);
+        checkReplyCode(Lora.valueOfCode(replyQueue.take()), Lora.REPLY_OK);
     }
 
     /**
@@ -269,9 +274,8 @@ public class LoraController implements Runnable {
      */
     private void atConfig() throws InterruptedException {
         String setCfg = Lora.AT_CFG.CODE + config.getConfiguration();
-        ChatsController.writeToLog(setCfg);
         writeQueue.put(setCfg);
-        checkReplyCode(Lora.AT_CFG, Lora.valueOfCode(replyQueue.take()), Lora.REPLY_OK);
+        checkReplyCode(Lora.valueOfCode(replyQueue.take()), Lora.REPLY_OK);
     }
 
     /**
@@ -281,7 +285,6 @@ public class LoraController implements Runnable {
      */
     private void atGetVersion() throws InterruptedException {
         String getVersion = Lora.AT_VER.CODE;
-        ChatsController.writeToLog(getVersion);
         writeQueue.put(getVersion);
         replyQueue.take();
     }
@@ -293,7 +296,6 @@ public class LoraController implements Runnable {
      */
     private void atDestAddr() throws InterruptedException {
         String setDestinationAddr = Lora.AT_DEST.CODE + "FFFF";
-        ChatsController.writeToLog(setDestinationAddr);
         writeQueue.put(setDestinationAddr);
         replyQueue.take();
     }
@@ -320,12 +322,11 @@ public class LoraController implements Runnable {
      * Check if reply code equals the expected reply code
      * If not log to console
      *
-     * @param cmd               the executed lora command
      * @param actualReplyCode   The reply code
      * @param expectedReplyCode The expected reply code
      * @return true if the reply code is equal, else false
      */
-    private boolean checkReplyCode(Lora cmd, Lora actualReplyCode, Lora expectedReplyCode) {
+    private boolean checkReplyCode(Lora actualReplyCode, Lora expectedReplyCode) {
         boolean equals = true;
         if (!actualReplyCode.equals(expectedReplyCode)) {
             equals = false;

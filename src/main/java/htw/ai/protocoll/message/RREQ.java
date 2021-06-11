@@ -71,4 +71,9 @@ public class RREQ extends Message {
     public void setDestinationSequenceNumber(byte destinationSequenceNumber) {
         this.destinationSequenceNumber = destinationSequenceNumber;
     }
+
+    @Override
+    public byte[] toMessage() {
+        return null;
+    }
 }

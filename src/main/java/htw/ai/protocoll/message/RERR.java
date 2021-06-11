@@ -61,4 +61,9 @@ public class RERR extends Message {
     public void setAdditionalSequenceNumber(byte additionalSequenceNumber) {
         this.additionalSequenceNumber = additionalSequenceNumber;
     }
+
+    @Override
+    public byte[] toMessage() {
+        return null;
+    }
 }

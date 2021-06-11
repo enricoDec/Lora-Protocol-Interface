@@ -10,4 +10,9 @@ public class RREP_ACK extends Message {
     public RREP_ACK(byte type) {
         super((byte) 4);
     }
+
+    @Override
+    public byte[] toMessage() {
+        return null;
+    }
 }

@@ -16,4 +16,6 @@ public abstract class Message {
     public byte getTYPE() {
         return TYPE;
     }
+
+    public abstract byte[] toMessage();
 }

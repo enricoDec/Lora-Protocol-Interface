@@ -61,4 +61,9 @@ public class RREP extends Message {
     public void setLifetime(byte lifetime) {
         this.lifetime = lifetime;
     }
+
+    @Override
+    public byte[] toMessage() {
+        return null;
+    }
 }

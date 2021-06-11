@@ -1,18 +1,21 @@
 package htw.ai.protocoll.message;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : LoraProtocolInterface
  * @version : 1.0
  * @since : 10-06-2021
  **/
-public class SEND_TEXT_REQUEST extends Message{
+public class SEND_TEXT_REQUEST extends Message {
     private byte originAddress;
     private byte destinationAddress;
     private byte messageSequenceNumber;
-    private byte[] payload;
+    private String payload;
 
-    public SEND_TEXT_REQUEST(byte type, byte originAddress, byte destinationAddress, byte messageSequenceNumber, byte[] payload) {
+    public SEND_TEXT_REQUEST(byte originAddress, byte destinationAddress, byte messageSequenceNumber, String payload) {
         super((byte) 5);
         this.originAddress = originAddress;
         this.destinationAddress = destinationAddress;
@@ -44,11 +47,21 @@ public class SEND_TEXT_REQUEST extends Message{
         this.messageSequenceNumber = messageSequenceNumber;
     }
 
-    public byte[] getPayload() {
+    public String getPayload() {
         return payload;
     }
 
-    public void setPayload(byte[] payload) {
+    public void setPayload(String payload) {
         this.payload = payload;
+    }
+
+    @Override
+    public byte[] toMessage() {
+        byte[] header = {getTYPE(), originAddress, destinationAddress, messageSequenceNumber};
+        byte[] data = payload.getBytes(StandardCharsets.US_ASCII);
+        byte[] buffer = new byte[header.length + data.length];
+        System.arraycopy(header, 0, buffer, 0, header.length);
+        System.arraycopy(data, 0, buffer, header.length, data.length);
+        return buffer;
     }
 }
