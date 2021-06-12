@@ -5,8 +5,8 @@ import com.jfoenix.controls.JFXTextField;
 import com.jfoenix.controls.JFXToggleButton;
 import htw.ai.App;
 import htw.ai.application.model.Chats;
+import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.application.model.ClientMessage;
-import htw.ai.application.model.LoraDiscovery;
 import htw.ai.application.model.UserMessage;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.AodvController;
@@ -49,7 +49,7 @@ import java.util.concurrent.BlockingQueue;
  **/
 public class ChatsController {
     private int pressed = 0;
-    private LoraDiscovery loraDiscovery;
+    private ChatsDiscovery chatsDiscovery;
     private Chats chats;
     private IntegerProperty newClient;
     private ObjectProperty<ClientMessage> newMessage;
@@ -113,8 +113,8 @@ public class ChatsController {
         // Initialize all Threads and start them
         // Main Thread -> AodvController -> LoraController -> UartController
         chats = new Chats();
-        loraDiscovery = new LoraDiscovery(chats);
-        aodvController = new AodvController(userInputQueue, CONFIG, loraDiscovery);
+        chatsDiscovery = new ChatsDiscovery(chats);
+        aodvController = new AodvController(userInputQueue, CONFIG, chatsDiscovery);
         aodv_thread = new Thread(aodvController, "AODV_Thread");
         boolean portOpen = aodvController.initialize();
         if (!portOpen) {
@@ -130,6 +130,7 @@ public class ChatsController {
 
         // Create Listeners for properties
 
+        // TODO: 12.06.2021 Fix this
         // Message sent property
 //        state = loraController.stateProperty();
 //        state.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
@@ -168,7 +169,7 @@ public class ChatsController {
         }));
 
         // Make new Chats
-        newClient = loraDiscovery.newClientProperty();
+        newClient = chatsDiscovery.newClientProperty();
         newClient.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
             HBox clientBox = new HBox();
             clientBox.getStyleClass().add("client");
@@ -196,6 +197,7 @@ public class ChatsController {
         }));
 
         // Destination Combo Box
+        // TODO: 12.06.2021 Don't allow to set destination to yourself
         for (int i = 1; i < 21; i++) {
             destinationCombo.getItems().add(i);
         }
@@ -263,6 +265,10 @@ public class ChatsController {
     public void cmdTextEnter(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER && !cmdInputTextField.getText().isEmpty()) {
             String userInput = cmdInputTextField.getText().trim();
+            if (userInput.length() > 30){
+                alert("Message longer then 30 characters!", Alert.AlertType.INFORMATION);
+                return;
+            }
             cmdInputTextField.setText("");
             sendData(userInput);
         } else if (keyEvent.getCode() == KeyCode.ENTER) {
@@ -277,6 +283,10 @@ public class ChatsController {
     public void buttonSendClicked(MouseEvent mouseEvent) {
         if (!cmdInputTextField.getText().isEmpty()) {
             String userInput = cmdInputTextField.getText().trim();
+            if (userInput.length() > 30){
+                alert("Message longer then 30 characters!", Alert.AlertType.INFORMATION);
+                return;
+            }
             cmdInputTextField.setText("");
             sendData(userInput);
         } else {
@@ -303,7 +313,7 @@ public class ChatsController {
 
             int destination = destinationCombo.selectionModelProperty().get().getSelectedItem();
             UserMessage userMessage = new UserMessage(data, CONFIG.getAddress(), destination);
-            loraDiscovery.newClient(userMessage);
+            chatsDiscovery.newClient(userMessage);
             userInputQueue.put(userMessage);
         } catch (InterruptedException e) {
             e.printStackTrace();

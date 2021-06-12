@@ -13,15 +13,27 @@ public class RREQ extends Message {
     private byte originSequenceNumber;
     private byte destinationAddress;
     private byte destinationSequenceNumber;
+    private byte rreqID;
 
-    public RREQ(byte type, byte uFlag, byte hopCount, byte originAddress, byte originSequenceNumber, byte destinationAddress, byte destinationSequenceNumber) {
-        super((byte) 5);
+    /**
+     * Route request
+     *
+     * @param uFlag                     uFlag
+     * @param hopCount                  hopCount
+     * @param originAddress             originAddress
+     * @param originSequenceNumber      originSequenceNumber
+     * @param destinationAddress        destinationAddress
+     * @param destinationSequenceNumber destinationSequenceNumber
+     */
+    public RREQ(byte uFlag, byte hopCount, byte originAddress, byte originSequenceNumber, byte destinationAddress, byte destinationSequenceNumber, byte rreqID) {
+        super(Type.RREQ);
         this.uFlag = uFlag;
         this.hopCount = hopCount;
         this.originAddress = originAddress;
         this.originSequenceNumber = originSequenceNumber;
         this.destinationAddress = destinationAddress;
         this.destinationSequenceNumber = destinationSequenceNumber;
+        this.rreqID = rreqID;
     }
 
     public byte getuFlag() {
@@ -72,8 +84,16 @@ public class RREQ extends Message {
         this.destinationSequenceNumber = destinationSequenceNumber;
     }
 
+    public byte getRreqID() {
+        return rreqID;
+    }
+
+    public void setRreqID(byte rreqID) {
+        this.rreqID = rreqID;
+    }
+
     @Override
     public byte[] toMessage() {
-        return null;
+        return new byte[]{getTYPE(), uFlag, hopCount, originAddress, originSequenceNumber, destinationAddress, destinationSequenceNumber, rreqID};
     }
 }

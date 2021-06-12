@@ -3,13 +3,11 @@ package htw.ai.lora;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
 import htw.ai.application.controller.ChatsController;
-import htw.ai.application.model.ClientMessage;
-import htw.ai.application.model.LoraDiscovery;
+import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.lora.config.Config;
 import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class LoraUART implements Runnable {
     private AtomicBoolean running = new AtomicBoolean(false);
     private final Config config;
-    private final LoraDiscovery loraDiscovery;
+    private final ChatsDiscovery chatsDiscovery;
     private final SerialPort comPort;
     // message Queue contains payload (after AT+SEND=x)
     private BlockingQueue<byte[]> messageQueue = new ArrayBlockingQueue<>(20);
@@ -32,9 +30,9 @@ public class LoraUART implements Runnable {
     private BlockingQueue<String> commandQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> replyQueue = new ArrayBlockingQueue<>(20);
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
-    private BlockingQueue<ClientMessage> lrQueue = new ArrayBlockingQueue<>(20);
+    private BlockingQueue<byte[]> lrQueue = new ArrayBlockingQueue<>(20);
 
-    LoraUART(Config config, LoraDiscovery loraDiscovery) throws SerialPortInvalidPortException {
+    LoraUART(Config config, ChatsDiscovery chatsDiscovery) throws SerialPortInvalidPortException {
         comPort = SerialPort.getCommPort(config.getPort());
         comPort.setBaudRate(config.getBaudRate());
         comPort.setParity(config.getParity());
@@ -43,7 +41,7 @@ public class LoraUART implements Runnable {
         comPort.setNumDataBits(config.getNumberOfDataBits());
 
         this.config = config;
-        this.loraDiscovery = loraDiscovery;
+        this.chatsDiscovery = chatsDiscovery;
     }
 
     /**
@@ -108,7 +106,7 @@ public class LoraUART implements Runnable {
      */
     private synchronized void read() {
         String data = "";
-        byte[] byteData;
+        byte[] byteData = null;
         // Not sure about timeout
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         // Check if any bytes are available to be read else close port and check if new data available to be written
@@ -132,11 +130,9 @@ public class LoraUART implements Runnable {
             }
             // Incoming messages
             else if (data.startsWith(Lora.LR.CODE)) {
-                ChatsController.writeToLog(data, Color.CYAN);
-                ClientMessage message = new ClientMessage(data);
-                loraDiscovery.newClient(message);
+                ChatsController.writeToLog(new String(byteData, StandardCharsets.US_ASCII), Color.CYAN);
                 try {
-                    lrQueue.put(message);
+                    lrQueue.put(byteData);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -216,7 +212,7 @@ public class LoraUART implements Runnable {
         return unknownQueue;
     }
 
-    BlockingQueue<ClientMessage> getLrQueue() {
+    BlockingQueue<byte[]> getLrQueue() {
         return lrQueue;
     }
 }

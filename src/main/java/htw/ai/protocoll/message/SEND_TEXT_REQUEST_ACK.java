@@ -11,8 +11,8 @@ public class SEND_TEXT_REQUEST_ACK extends Message {
     private byte destinationAddress;
     private byte messageSequenceNumber;
 
-    public SEND_TEXT_REQUEST_ACK(byte type, byte originAddress, byte destinationAddress, byte messageSequenceNumber) {
-        super((byte) 7);
+    public SEND_TEXT_REQUEST_ACK(byte originAddress, byte destinationAddress, byte messageSequenceNumber) {
+        super(Type.SEND_TEXT_REQUEST_ACK);
         this.originAddress = originAddress;
         this.destinationAddress = destinationAddress;
         this.messageSequenceNumber = messageSequenceNumber;

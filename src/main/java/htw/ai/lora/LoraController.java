@@ -1,8 +1,8 @@
 package htw.ai.lora;
 
 import htw.ai.application.controller.ChatsController;
+import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.application.model.ClientMessage;
-import htw.ai.application.model.LoraDiscovery;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.Message;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -24,7 +24,7 @@ public class LoraController implements Runnable {
     // JavaFX
     private LoraState loraState;
     private SimpleIntegerProperty state = new SimpleIntegerProperty();
-    private LoraDiscovery loraDiscovery;
+    private ChatsDiscovery chatsDiscovery;
     Thread loraUART_thread;
     private LoraUART loraUART;
     private final Config config;
@@ -40,12 +40,12 @@ public class LoraController implements Runnable {
     private BlockingQueue<ClientMessage> lrQueue = new ArrayBlockingQueue<>(20);
     private AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    public LoraController(Config config, LoraDiscovery loraDiscovery, BlockingQueue<Message> messagesQueue) {
+    public LoraController(Config config, ChatsDiscovery chatsDiscovery, BlockingQueue<Message> messagesQueue) {
         this.config = config;
         this.messagesQueue = messagesQueue;
         this.loraState = LoraState.START;
 
-        this.loraUART = new LoraUART(config, loraDiscovery);
+        this.loraUART = new LoraUART(config, chatsDiscovery);
         this.writeQueue = loraUART.getCommandQueue();
         this.payloadQueue = loraUART.getMessageQueue();
         this.replyQueue = loraUART.getReplyQueue();
@@ -334,7 +334,7 @@ public class LoraController implements Runnable {
         return equals;
     }
 
-    public BlockingQueue<ClientMessage> getLrQueue() {
+    public BlockingQueue<byte[]> getLrQueue() {
         return loraUART.getLrQueue();
     }
 }

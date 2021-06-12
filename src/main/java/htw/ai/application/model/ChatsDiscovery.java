@@ -12,12 +12,12 @@ import java.util.HashSet;
  * @version : 1.0
  * @since : 20-05-2021
  **/
-public class LoraDiscovery {
+public class ChatsDiscovery {
     private HashSet<Integer> discoveryList = new HashSet<>();
     private IntegerProperty newClient = new SimpleIntegerProperty();
     private Chats chats;
 
-    public LoraDiscovery(Chats chats) {
+    public ChatsDiscovery(Chats chats) {
         this.chats = chats;
     }
 

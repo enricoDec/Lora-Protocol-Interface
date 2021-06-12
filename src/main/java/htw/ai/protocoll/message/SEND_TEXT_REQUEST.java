@@ -1,7 +1,6 @@
 package htw.ai.protocoll.message;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * @author : Enrico Gamil Toros de Chadarevian
@@ -16,7 +15,7 @@ public class SEND_TEXT_REQUEST extends Message {
     private String payload;
 
     public SEND_TEXT_REQUEST(byte originAddress, byte destinationAddress, byte messageSequenceNumber, String payload) {
-        super((byte) 5);
+        super(Type.SEND_TEXT_REQUEST);
         this.originAddress = originAddress;
         this.destinationAddress = destinationAddress;
         this.messageSequenceNumber = messageSequenceNumber;

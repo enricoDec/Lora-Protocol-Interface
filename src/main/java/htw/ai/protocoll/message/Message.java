@@ -7,14 +7,14 @@ package htw.ai.protocoll.message;
  * @since : 10-06-2021
  **/
 public abstract class Message {
-    private final byte TYPE;
+    private byte type;
 
     public Message(byte type) {
-        this.TYPE = type;
+        this.type = type;
     }
 
     public byte getTYPE() {
-        return TYPE;
+        return type;
     }
 
     public abstract byte[] toMessage();

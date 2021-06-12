@@ -13,8 +13,8 @@ public class RREP extends Message {
     private byte destinationSequenceNumber;
     private byte lifetime;
 
-    public RREP(byte type, byte hopCount, byte originAddress, byte destinationAddress, byte destinationSequenceNumber, byte lifetime) {
-        super((byte) 2);
+    public RREP(byte hopCount, byte originAddress, byte destinationAddress, byte destinationSequenceNumber, byte lifetime) {
+        super(Type.RREP);
         this.hopCount = hopCount;
         this.originAddress = originAddress;
         this.destinationAddress = destinationAddress;
