@@ -13,6 +13,6 @@ public class RREP_ACK extends Message {
 
     @Override
     public byte[] toMessage() {
-        return null;
+        return new byte[]{getTYPE()};
     }
 }

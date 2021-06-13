@@ -1,5 +1,7 @@
 package htw.ai.protocoll.message;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : LoraProtocolInterface
@@ -64,6 +66,6 @@ public class RERR extends Message {
 
     @Override
     public byte[] toMessage() {
-        return null;
+        return new byte[]{getTYPE(), destinationCount, unreachableDestinationAddress, unreachableDestinationSequenceNumber, additionalAddresses, additionalSequenceNumber};
     }
 }

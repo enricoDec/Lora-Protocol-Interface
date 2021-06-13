@@ -6,6 +6,7 @@ import htw.ai.application.model.ClientMessage;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.Message;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -106,14 +107,15 @@ public class LoraController implements Runnable {
                     byte[] messageBytes = null;
                     try {
                         // Wait for user Input
-                        Message message = messagesQueue.poll(1, TimeUnit.SECONDS);
+                        Message message = messagesQueue.poll(100, TimeUnit.MILLISECONDS);
                         if (message == null)
-                            return;
+                            break;
                         // Type 0 not a message (at command)
                         if (message.getTYPE() == (byte) 0)
                             atCommand = message.toString();
                         else
                             messageBytes = message.toMessage();
+                        ChatsController.writeToLog(message.toString(), Color.YELLOW);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

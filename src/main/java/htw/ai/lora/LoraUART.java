@@ -130,7 +130,6 @@ public class LoraUART implements Runnable {
             }
             // Incoming messages
             else if (data.startsWith(Lora.LR.CODE)) {
-                ChatsController.writeToLog(new String(byteData, StandardCharsets.US_ASCII), Color.CYAN);
                 try {
                     lrQueue.put(byteData);
                 } catch (InterruptedException e) {

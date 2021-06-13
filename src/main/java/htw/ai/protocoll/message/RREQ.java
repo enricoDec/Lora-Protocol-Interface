@@ -20,12 +20,13 @@ public class RREQ extends Message {
      *
      * @param uFlag                     uFlag
      * @param hopCount                  hopCount
+     * @param rreqID                    rreqID
      * @param originAddress             originAddress
      * @param originSequenceNumber      originSequenceNumber
      * @param destinationAddress        destinationAddress
      * @param destinationSequenceNumber destinationSequenceNumber
      */
-    public RREQ(byte uFlag, byte hopCount, byte originAddress, byte originSequenceNumber, byte destinationAddress, byte destinationSequenceNumber, byte rreqID) {
+    public RREQ(byte uFlag, byte hopCount, byte rreqID, byte originAddress, byte originSequenceNumber, byte destinationAddress, byte destinationSequenceNumber) {
         super(Type.RREQ);
         this.uFlag = uFlag;
         this.hopCount = hopCount;
@@ -94,6 +95,6 @@ public class RREQ extends Message {
 
     @Override
     public byte[] toMessage() {
-        return new byte[]{getTYPE(), uFlag, hopCount, originAddress, originSequenceNumber, destinationAddress, destinationSequenceNumber, rreqID};
+        return new byte[]{getTYPE(), uFlag, hopCount, rreqID, originAddress, originSequenceNumber, destinationAddress, destinationSequenceNumber};
     }
 }

@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since : 12-06-2021
  **/
 public class RouteRequestHandler implements Runnable{
-    private int tries = 0;
     private final RREQ rreq;
     private final AtomicBoolean isRunning = new AtomicBoolean(true);
     private final AodvController aodvController;
@@ -24,15 +23,21 @@ public class RouteRequestHandler implements Runnable{
 
     @Override
     public void run() {
-        while (isRunning.get()) {
+        int MAX_TRIES = 5;
+        while (isRunning.get() && !gotRREP.get()) {
             try {
-                aodvController.getMessagesQueue().put(rreq);
-                int MAX_TRIES = 5;
-                while (!gotRREP.get() || tries < MAX_TRIES) {
-                    int DELAY_IN_SECONDS = 5;
+                int DELAY_IN_SECONDS = 5;
+                for (int tries = 1; tries <= MAX_TRIES; tries++) {
+                    if (gotRREP.get()){
+                        System.out.println("Got RREP");
+                        return;
+                    }
+                    System.out.println("Sending RREQ tries: " + tries);
+                    aodvController.getMessagesQueue().put(rreq);
                     Thread.sleep(DELAY_IN_SECONDS * 1000);
-                    tries++;
                 }
+                System.out.println("Got no RREP");
+                return;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

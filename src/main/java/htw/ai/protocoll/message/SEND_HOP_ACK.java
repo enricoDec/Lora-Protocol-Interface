@@ -24,6 +24,6 @@ public class SEND_HOP_ACK extends Message {
 
     @Override
     public byte[] toMessage() {
-        return null;
+        return new byte[]{getTYPE(), messageSequenceNumber};
     }
 }

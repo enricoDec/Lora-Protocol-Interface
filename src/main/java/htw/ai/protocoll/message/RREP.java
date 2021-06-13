@@ -64,6 +64,6 @@ public class RREP extends Message {
 
     @Override
     public byte[] toMessage() {
-        return null;
+        return new byte[]{getTYPE(), hopCount, originAddress, destinationAddress, destinationSequenceNumber, lifetime};
     }
 }

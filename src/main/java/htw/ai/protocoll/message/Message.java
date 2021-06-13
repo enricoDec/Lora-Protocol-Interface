@@ -8,6 +8,7 @@ package htw.ai.protocoll.message;
  **/
 public abstract class Message {
     private byte type;
+    private byte prevHop;
 
     public Message(byte type) {
         this.type = type;
@@ -18,4 +19,12 @@ public abstract class Message {
     }
 
     public abstract byte[] toMessage();
+
+    public byte getPrevHop() {
+        return prevHop;
+    }
+
+    public void setPrevHop(byte prevHop) {
+        this.prevHop = prevHop;
+    }
 }

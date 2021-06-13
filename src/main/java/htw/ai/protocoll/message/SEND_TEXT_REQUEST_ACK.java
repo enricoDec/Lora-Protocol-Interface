@@ -44,6 +44,6 @@ public class SEND_TEXT_REQUEST_ACK extends Message {
 
     @Override
     public byte[] toMessage() {
-        return null;
+        return new byte[]{getTYPE(), originAddress, destinationAddress, messageSequenceNumber};
     }
 }
