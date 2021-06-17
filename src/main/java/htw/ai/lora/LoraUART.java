@@ -26,10 +26,13 @@ public class LoraUART implements Runnable {
     private final SerialPort comPort;
     // message Queue contains payload (after AT+SEND=x)
     private BlockingQueue<byte[]> messageQueue = new ArrayBlockingQueue<>(20);
-    // writeQueue contains AT Commands
+    // writeQueue contains AT Commands (ex. AT+CMD)
     private BlockingQueue<String> commandQueue = new ArrayBlockingQueue<>(20);
+    // contains reply codes from lora (ex. AT,OK)
     private BlockingQueue<String> replyQueue = new ArrayBlockingQueue<>(20);
+    // contains everything else (ex. Model Hima..)
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
+    // contains received messages from other lora modules
     private BlockingQueue<byte[]> lrQueue = new ArrayBlockingQueue<>(20);
 
     LoraUART(Config config, ChatsDiscovery chatsDiscovery) throws SerialPortInvalidPortException {
@@ -65,7 +68,7 @@ public class LoraUART implements Runnable {
     }
 
     /**
-     * Stop the thread
+     * Stop the thread if not already running
      */
     void stop() {
         if (!running.get())
@@ -80,7 +83,7 @@ public class LoraUART implements Runnable {
     public void run() {
         // Important only one thread per port should be running at any time
         // Thread constantly checks if new data is available at Serial Port
-        // Only if new data needs to be written to Serial Port it will switch to write
+        // In theory port should not be blocked if not reading or writing at the moment (not tested)
         while (running.get()) {
             // If no data to be written continue to poll Serial Port
             if (!commandQueue.isEmpty()) {
@@ -102,7 +105,7 @@ public class LoraUART implements Runnable {
     }
 
     /**
-     * Read data to Serial Port
+     * Read data from Serial Port
      */
     private synchronized void read() {
         String data = "";
@@ -148,12 +151,12 @@ public class LoraUART implements Runnable {
     }
 
     /**
-     * Send data to serial Port
+     * Write data to serial Port, will be encoded as ASCII
      *
-     * @param data Data to be send. <b>Has to be UTF-8 encoded without new line or carriage return.</b>
+     * @param data Data to be send. <b>New line and carriage return will be appended by this method</b>
      */
     private synchronized void write(String data) {
-        byte[] dataWithEOF = (data + Lora.EOF.CODE).getBytes(StandardCharsets.UTF_8);
+        byte[] dataWithEOF = (data + Lora.EOF.CODE).getBytes(StandardCharsets.US_ASCII);
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         comPort.writeBytes(dataWithEOF, dataWithEOF.length);
 
@@ -161,9 +164,9 @@ public class LoraUART implements Runnable {
     }
 
     /**
-     * Send data to serial Port
+     * Send data to serial Port.
      *
-     * @param data Data to be send. <b>Has to be UTF-8 encoded without new line or carriage return.</b>
+     * @param data Data to be send. <b>New line and carriage return will be appended by this method</b>
      */
     private synchronized void write(byte[] data) {
         byte[] eof = Lora.EOF.CODE.getBytes(StandardCharsets.US_ASCII);
@@ -175,9 +178,7 @@ public class LoraUART implements Runnable {
     }
 
     /**
-     * Get the the write queue
-     * The write queue contains all the data to be written to the lora
-     * To write data get the reference of the write queue and call put()
+     * Get the the write queue. The command write queue should only contain AT commands
      *
      * @return reference to the write queue
      */
@@ -185,6 +186,11 @@ public class LoraUART implements Runnable {
         return commandQueue;
     }
 
+    /**
+     * Get the the write queue. The command write queue should only contain Messages to be send with AT+SEND=xx
+     *
+     * @return reference to the write queue
+     */
     public BlockingQueue<byte[]> getMessageQueue() {
         return messageQueue;
     }
@@ -211,6 +217,13 @@ public class LoraUART implements Runnable {
         return unknownQueue;
     }
 
+    /**
+     * Get the reply queue
+     * The reply queue contains all the data received from the lora that starts with "LR"
+     * To read data get the reference of the reply queue and call take()
+     *
+     * @return reference to the reply queue
+     */
     BlockingQueue<byte[]> getLrQueue() {
         return lrQueue;
     }

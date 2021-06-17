@@ -64,14 +64,27 @@ public class UartSettingsController {
         portInput.setText(config.getPort());
     }
 
+    /**
+     * Go one View back (to chats view)
+     * @throws IOException IOException
+     */
     public void back() throws IOException {
         App.setRoot("view/chats");
     }
 
+    /**
+     * Go one View forward (to loraSettings view)
+     * @param mouseEvent mouseEvent
+     * @throws IOException
+     */
     public void forward(MouseEvent mouseEvent) throws IOException {
         App.setRoot("view/loraSettings");
     }
 
+    /**
+     * Save the current lora config to file
+     * @param mouseEvent
+     */
     public void save(MouseEvent mouseEvent) {
         int baudrate;
         int dataBits;

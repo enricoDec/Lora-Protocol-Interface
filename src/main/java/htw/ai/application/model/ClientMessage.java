@@ -18,7 +18,7 @@ public class ClientMessage{
     /**
      * Represents a received message
      *
-     * @param data data received ex. LR,0012,05,Hello
+     * @param data data received ex. LR,0012,05,Hello -> Hello
      */
     public ClientMessage(String data) {
         interpret(data);

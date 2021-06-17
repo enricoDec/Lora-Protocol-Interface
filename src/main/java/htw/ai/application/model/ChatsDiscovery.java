@@ -24,7 +24,7 @@ public class ChatsDiscovery {
     /**
      * Add a client address to the discovery list
      *
-     * @param message message
+     * @param message message to be added
      */
     public void newClient(ClientMessage message) {
         // User Message
@@ -50,11 +50,6 @@ public class ChatsDiscovery {
         }
     }
 
-    /**
-     * Get the discovery list
-     *
-     * @return discovery list reference
-     */
     public HashSet<Integer> getDiscoveryList() {
         return discoveryList;
     }

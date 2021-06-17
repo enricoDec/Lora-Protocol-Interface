@@ -2,7 +2,6 @@ package htw.ai.lora;
 
 import htw.ai.application.controller.ChatsController;
 import htw.ai.application.model.ChatsDiscovery;
-import htw.ai.application.model.ClientMessage;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.Message;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -10,7 +9,6 @@ import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,13 +20,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since : 15-05-2021
  **/
 public class LoraController implements Runnable {
-    // JavaFX
+    // Current state of the Statemachine
     private LoraState loraState;
+    // State Property used by view
     private SimpleIntegerProperty state = new SimpleIntegerProperty();
-    private ChatsDiscovery chatsDiscovery;
+
     Thread loraUART_thread;
     private LoraUART loraUART;
+
     private final Config config;
+
     // Queue containing user input data
     private BlockingQueue<Message> messagesQueue;
     // Queue containing commands to write
@@ -38,7 +39,6 @@ public class LoraController implements Runnable {
     private BlockingQueue<String> replyQueue;
     // Queue containing any other data (Not AT or LR)
     private BlockingQueue<String> unknownQueue;
-    private BlockingQueue<ClientMessage> lrQueue = new ArrayBlockingQueue<>(20);
     private AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public LoraController(Config config, ChatsDiscovery chatsDiscovery, BlockingQueue<Message> messagesQueue) {
@@ -103,19 +103,14 @@ public class LoraController implements Runnable {
                     loraState = LoraState.USER_INPUT;
                     break;
                 case USER_INPUT:
-                    String atCommand = null;
                     byte[] messageBytes = null;
                     try {
                         // Wait for user Input
                         Message message = messagesQueue.poll(100, TimeUnit.MILLISECONDS);
                         if (message == null)
                             break;
-                        // Type 0 not a message (at command)
-                        if (message.getTYPE() == (byte) 0)
-                            atCommand = message.toString();
-                        else
-                            messageBytes = message.toMessage();
-                        ChatsController.writeToLog(message.toString(), Color.YELLOW);
+                        messageBytes = message.toMessage();
+                        ChatsController.writeToLog(new String(message.toMessage(), StandardCharsets.US_ASCII), Color.YELLOW);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -134,15 +129,8 @@ public class LoraController implements Runnable {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                    } else if (atCommand != null) {
-                        try {
-                            writeQueue.put(atCommand);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        loraState = LoraState.WAIT_REPLY;
                     } else {
-                        ChatsController.writeToLog(atCommand + " not a valid input!");
+                        ChatsController.writeToLog("Message ignored, bad Type.");
                         loraState = LoraState.USER_INPUT;
                     }
                     break;
@@ -214,7 +202,7 @@ public class LoraController implements Runnable {
             // Get Lora version
             atGetVersion();
             // Set Destination Address
-            atDestAddr();
+            setAtDestAddr("FFFF");
             // Send something
             String hello = "Client " + config.getAddress() + " started.";
             writeQueue.put(Lora.AT_SEND.CODE + hello.length());
@@ -296,8 +284,8 @@ public class LoraController implements Runnable {
      *
      * @throws InterruptedException Thrown when a thread is waiting, sleeping, or otherwise occupied, and the thread is interrupted.
      */
-    private void atDestAddr() throws InterruptedException {
-        String setDestinationAddr = Lora.AT_DEST.CODE + "FFFF";
+    public void setAtDestAddr(String destination) throws InterruptedException {
+        String setDestinationAddr = Lora.AT_DEST.CODE + destination;
         writeQueue.put(setDestinationAddr);
         replyQueue.take();
     }

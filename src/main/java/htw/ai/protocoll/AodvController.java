@@ -2,9 +2,7 @@ package htw.ai.protocoll;
 
 import htw.ai.application.controller.ChatsController;
 import htw.ai.application.model.ChatsDiscovery;
-import htw.ai.application.model.ClientMessage;
 import htw.ai.application.model.UserMessage;
-import htw.ai.lora.Lora;
 import htw.ai.lora.LoraController;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.*;
@@ -29,48 +27,75 @@ public class AodvController implements Runnable {
     private long sequenceNumber = 0;
     private byte rreqID = 0;
 
+    // Routing table of all valid routes
     private HashMap<Integer, Route> routingTable = new HashMap<>();
-    private BlockingQueue<UserMessage> atQueue;
+    // Queue of user input Messages
+    private BlockingQueue<UserMessage> userMessagesQueue;
+    // Queue of incoming Messages from other Modules
     private BlockingQueue<byte[]> lrQueue;
+    // Queue of outgoing Messages to other Modules
     private BlockingQueue<Message> messagesQueue = new ArrayBlockingQueue<>(20);
+    // Thread state
     private AtomicBoolean isRunning = new AtomicBoolean(false);
+    // List of all route Requests
+    private HashMap<Byte, RouteRequestHandler> routeRequestHandlerMap = new HashMap<>();
+    // List of all messages pending route to be send
+    private HashMap<Integer, LinkedList<UserMessage>> pendingMessages = new HashMap<>();
+
     private LoraController loraController;
     private Config config;
     private ChatsDiscovery chatsDiscovery;
     Thread lora_thread;
-    private HashMap<Byte, Byte> rreqBuffer = new HashMap<>();
-    private HashMap<Byte, RouteRequestHandler> routeRequestHandlerHashMap = new HashMap<>();
-    private HashMap<Integer, LinkedList<UserMessage>> pendingMessages = new HashMap<>();
 
-    public AodvController(BlockingQueue<UserMessage> atQueue, Config config, ChatsDiscovery chatsDiscovery) {
-        this.atQueue = atQueue;
+    public AodvController(BlockingQueue<UserMessage> userMessagesQueue, Config config, ChatsDiscovery chatsDiscovery) {
+        this.userMessagesQueue = userMessagesQueue;
         this.config = config;
         this.chatsDiscovery = chatsDiscovery;
     }
 
+    /**
+     * Create a RREQ
+     *
+     * @param rreq RREQ to be send
+     */
     private void createRouteRequest(RREQ rreq) {
         incrementSeqNumber();
         rreqID++;
         setDestination("FFFF");
-        rreqBuffer.put(rreq.getRreqID(), rreq.getDestinationAddress());
         RouteRequestHandler routeRequestHandler = new RouteRequestHandler(rreq, this);
         Thread thread = new Thread(routeRequestHandler);
         thread.start();
-        routeRequestHandlerHashMap.put(rreq.getDestinationAddress(), routeRequestHandler);
+        routeRequestHandlerMap.put(rreq.getDestinationAddress(), routeRequestHandler);
     }
 
+    /**
+     * Handle an incoming RREQ
+     *
+     * @param rreq RREQ to be handled
+     */
     private void handleRouteRequest(RREQ rreq) {
         if (rreq.getDestinationAddress() != (byte) config.getAddress()) {
             // Am Intermediate Node
 
+        } else if (rreq.getDestinationAddress() == (byte) config.getAddress()) {
+            // Am Destination Node
         }
     }
 
+    /**
+     * Create a RREP
+     */
     private void createRouteReply() {
         sequenceNumber = Integer.MAX_VALUE;
     }
 
-    private void sendTextRequest(SEND_TEXT_REQUEST message, Route route) {
+    /**
+     * Create a SEND TEXT REQUEST
+     *
+     * @param message Payload
+     * @param route   Route to destination
+     */
+    private void createTextRequest(SEND_TEXT_REQUEST message, Route route) {
         setDestination(String.valueOf(route.getDestinationAddress()));
         try {
             messagesQueue.put(message);
@@ -79,6 +104,9 @@ public class AodvController implements Runnable {
         }
     }
 
+    /**
+     * Increment the Seq Number
+     */
     private void incrementSeqNumber() {
         if (sequenceNumber == 4294967295L)
             sequenceNumber = 0;
@@ -88,13 +116,17 @@ public class AodvController implements Runnable {
             sequenceNumber++;
     }
 
-
+    /**
+     * Route a Message if route to destination node is present in the routing table send TEXT REQUEST else create RREQ to destination
+     *
+     * @param userMessage Message to be send
+     */
     private void route(UserMessage userMessage) {
         // If Valid route for destination already present send SEND_TEXT_REQUEST
         if (routingTable.containsKey(userMessage.getDestinationAddress())) {
-            System.out.println("Valid route found in table, sending Text Req");
+            ChatsController.writeToLog("Valid route found in table, sending Text Req");
             SEND_TEXT_REQUEST send_text_request = new SEND_TEXT_REQUEST((byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), (byte) 0, userMessage.getData());
-            sendTextRequest(send_text_request, routingTable.get(userMessage.getDestinationAddress()));
+            createTextRequest(send_text_request, routingTable.get(userMessage.getDestinationAddress()));
             LinkedList<UserMessage> userMessages = pendingMessages.get(userMessage.getDestinationAddress());
             if (userMessages == null)
                 pendingMessages.put(userMessage.getDestinationAddress(), new LinkedList<>(Collections.singletonList(userMessage)));
@@ -102,7 +134,7 @@ public class AodvController implements Runnable {
                 userMessages.add(userMessage);
         } else {
             // If no Valid route known RREQ
-            System.out.println("No valid route found, sending RREQ");
+            ChatsController.writeToLog("No valid route found, sending RREQ");
             createRouteRequest(new RREQ((byte) 1, (byte) 0, rreqID, (byte) config.getAddress(), (byte) sequenceNumber, (byte) userMessage.getDestinationAddress(), (byte) 0));
         }
     }
@@ -110,12 +142,12 @@ public class AodvController implements Runnable {
     @Override
     public void run() {
         while (isRunning.get()) {
-            if (atQueue.peek() != null) {
+            if (userMessagesQueue.peek() != null) {
                 // If client want to send message start process
                 UserMessage userMessage = null;
                 try {
-                    userMessage = atQueue.take();
-                    System.out.println("User want to send a Message, routing...");
+                    userMessage = userMessagesQueue.take();
+                    ChatsController.writeToLog("User want to send a Message, routing...");
                     route(userMessage);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -124,9 +156,6 @@ public class AodvController implements Runnable {
                 // If message received do smth
                 try {
                     byte[] data = lrQueue.take();
-                    for (byte b : data) {
-                        System.out.println(b);
-                    }
                     Message message = decode(data);
                     if (message == null)
                         ChatsController.writeToLog("Bad Packet received");
@@ -135,8 +164,8 @@ public class AodvController implements Runnable {
                         switch (message.getTYPE()) {
                             case Type.RREP:
                                 RREP rrep = (RREP) message;
-                                if (rrep.getOriginAddress() == config.getAddress() && routeRequestHandlerHashMap.containsKey(rrep.getDestinationAddress())) {
-                                    routeRequestHandlerHashMap.get(rrep.getDestinationAddress()).gotRREP();
+                                if (rrep.getOriginAddress() == config.getAddress() && routeRequestHandlerMap.containsKey(rrep.getDestinationAddress())) {
+                                    routeRequestHandlerMap.get(rrep.getDestinationAddress()).gotRREP();
                                     // RREP-ACK
                                     RREP_ACK rrepAck = new RREP_ACK();
                                     setDestination(String.valueOf(rrepAck.getPrevHop()));
@@ -146,7 +175,7 @@ public class AodvController implements Runnable {
                                     LinkedList<UserMessage> userMessages = pendingMessages.get((int) rrep.getDestinationAddress());
                                     if (userMessages != null) {
                                         for (UserMessage userMessage : userMessages) {
-                                            sendTextRequest(new SEND_TEXT_REQUEST((byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), (byte) sequenceNumber, userMessage.getData()), routingTable.get(userMessage.getDestinationAddress()));
+                                            createTextRequest(new SEND_TEXT_REQUEST((byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), (byte) sequenceNumber, userMessage.getData()), routingTable.get(userMessage.getDestinationAddress()));
                                         }
                                     }
                                 }
@@ -160,24 +189,25 @@ public class AodvController implements Runnable {
         }
     }
 
+    /**
+     * Set the AT+DEST=x
+     *
+     * @param destination set destination to 1-20 or FFFF to broadcast
+     */
     private void setDestination(String destination) {
         try {
-            messagesQueue.put(new Message(Type.CUSTOM) {
-                @Override
-                public byte[] toMessage() {
-                    return null;
-                }
-
-                @Override
-                public String toString() {
-                    return Lora.AT_DEST.CODE + destination;
-                }
-            });
+            loraController.setAtDestAddr(destination);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Decode an incoming message to wrapper
+     *
+     * @param bytes received bytes
+     * @return wrapped Message
+     */
     private Message decode(byte[] bytes) {
         // LR , ADDR , NUMB_BYTES ,  ......
         // 01 2 3456 7 89         10 11-x
@@ -249,6 +279,11 @@ public class AodvController implements Runnable {
         return null;
     }
 
+    /**
+     * Initialize thread. <b>Need to be called before thread.start()!</b>
+     *
+     * @return true if the port to the lora module was opened successfully else false
+     */
     public boolean initialize() {
         if (!isRunning.get()) {
             isRunning.set(true);
@@ -265,13 +300,16 @@ public class AodvController implements Runnable {
         return true;
     }
 
+    /**
+     * Stop the Thread and all the child threads
+     */
     public void stop() {
         if (isRunning.get()) {
             isRunning.set(false);
             loraController.stop();
             try {
                 lora_thread.join();
-                routeRequestHandlerHashMap.forEach((k, v) -> v.gotRREP());
+                routeRequestHandlerMap.forEach((k, v) -> v.gotRREP());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -71,10 +71,18 @@ public class LoraSettingsController {
         preambleLengthInput.setText(String.valueOf(config.getPreambleLength()));
     }
 
+    /**
+     * Go one View back (to uartSettings)
+     * @throws IOException IOException
+     */
     public void back() throws IOException {
         App.setRoot("view/uartSettings");
     }
 
+    /**
+     * Save the current lora config to file
+     * @param mouseEvent mouseEvent
+     */
     public void save(MouseEvent mouseEvent) {
         int carrierFrequency;
         int power;
@@ -150,6 +158,11 @@ public class LoraSettingsController {
         }
     }
 
+    /**
+     * Show an Alert
+     * @param message message
+     * @param alertType alertType
+     */
     public void showAlert(String message, Alert.AlertType alertType) {
         Alert alert = new Alert(alertType);
         alert.setContentText(message);

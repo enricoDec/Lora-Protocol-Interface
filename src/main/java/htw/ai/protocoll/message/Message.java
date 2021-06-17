@@ -7,23 +7,48 @@ package htw.ai.protocoll.message;
  * @since : 10-06-2021
  **/
 public abstract class Message {
-    private byte type;
+    private final byte type;
     private byte prevHop;
 
+    /**
+     * A Message wraps a type of AODV message
+     *
+     * @param type type of AODV Message (1-7)
+     */
     public Message(byte type) {
         this.type = type;
     }
 
+    /**
+     * Get the type of the message
+     *
+     * @return
+     */
     public byte getTYPE() {
         return type;
     }
 
+    /**
+     * Get message as bytes in the right order to be send
+     *
+     * @return array of bytes following protocol
+     */
     public abstract byte[] toMessage();
 
+    /**
+     * Prev Hop for Messages received is the origin of the message (LR,origin,...)
+     *
+     * @return previous hop
+     */
     public byte getPrevHop() {
         return prevHop;
     }
 
+    /**
+     * Set the previous hop
+     *
+     * @param prevHop previous hop
+     */
     public void setPrevHop(byte prevHop) {
         this.prevHop = prevHop;
     }

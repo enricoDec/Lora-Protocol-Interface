@@ -1,7 +1,5 @@
 package htw.ai.protocoll.message;
 
-import java.nio.charset.StandardCharsets;
-
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : LoraProtocolInterface

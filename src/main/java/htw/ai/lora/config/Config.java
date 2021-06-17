@@ -40,9 +40,6 @@ public class Config {
     // Lora properties
     private int address;
 
-    public Config() {
-    }
-
     /**
      * Read the config file and set properties variables.
      * If a local copy of the properties file exists it will read from it,
@@ -148,15 +145,6 @@ public class Config {
         append(sb, implicitHeaderOn, rxSingleOn, frequencyHopOn, hopPeriod, rxPacketTimeout, payloadLength);
         sb.append(preambleLength);
         return sb.toString();
-    }
-
-    private void append(StringBuffer sb, int carrierFrequency, int power, int modulationBandwidth, int spreadingFactor, int errorCoding, int crc) {
-        sb.append(carrierFrequency).append(Lora.DIVIDER.CODE);
-        sb.append(power).append(Lora.DIVIDER.CODE);
-        sb.append(modulationBandwidth).append(Lora.DIVIDER.CODE);
-        sb.append(spreadingFactor).append(Lora.DIVIDER.CODE);
-        sb.append(errorCoding).append(Lora.DIVIDER.CODE);
-        sb.append(crc).append(Lora.DIVIDER.CODE);
     }
 
     public String getPROP_FILE_NAME() {
@@ -348,5 +336,14 @@ public class Config {
         sb.append("Port=").append(port).append(System.lineSeparator());
         sb.append("ModuleId=").append(address).append(System.lineSeparator());
         return sb.toString();
+    }
+
+    private void append(StringBuffer sb, int carrierFrequency, int power, int modulationBandwidth, int spreadingFactor, int errorCoding, int crc) {
+        sb.append(carrierFrequency).append(Lora.DIVIDER.CODE);
+        sb.append(power).append(Lora.DIVIDER.CODE);
+        sb.append(modulationBandwidth).append(Lora.DIVIDER.CODE);
+        sb.append(spreadingFactor).append(Lora.DIVIDER.CODE);
+        sb.append(errorCoding).append(Lora.DIVIDER.CODE);
+        sb.append(crc).append(Lora.DIVIDER.CODE);
     }
 }

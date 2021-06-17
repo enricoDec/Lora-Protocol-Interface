@@ -15,7 +15,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
@@ -48,17 +47,27 @@ import java.util.concurrent.BlockingQueue;
  * @since : 28-05-2021
  **/
 public class ChatsController {
+    // Counts times pressed the send button without entering a message
     private int pressed = 0;
+    // ChatsDiscovery is the Model use by the view to handle new Chats, it keeps a list of all Chats
     private ChatsDiscovery chatsDiscovery;
+    // Handle new Chat messages and history of each chat
     private Chats chats;
+    // Property changing when new Client discovered by the ChatsDiscovery
     private IntegerProperty newClient;
+    // New Message from this node
     private ObjectProperty<ClientMessage> newMessage;
+    // Queue of all node messages
     private BlockingQueue<UserMessage> userInputQueue;
-    private BooleanProperty isRunning;
+    // List of all Chat Boxes
     private LinkedList<GridPane> userMessages = new LinkedList<>();
+
     public static Config CONFIG = new Config();
+    // Currently selected chat
     private int currentChat = -1;
+    // AODV Controller
     private AodvController aodvController;
+    // AODV Thread
     private Thread aodv_thread;
 
     @FXML
@@ -98,6 +107,9 @@ public class ChatsController {
         }
     }
 
+    /**
+     * Start to send and receive from Lora
+     */
     public void start() {
         userInputQueue = new ArrayBlockingQueue<>(20);
 
@@ -125,7 +137,6 @@ public class ChatsController {
             alert("Could not open port " + CONFIG.getPort(), Alert.AlertType.ERROR);
             return;
         }
-
         aodv_thread.start();
 
         // Create Listeners for properties
@@ -168,7 +179,7 @@ public class ChatsController {
                 displayNotUserMessage(newValue.getData());
         }));
 
-        // Make new Chats
+        // Make new Chat
         newClient = chatsDiscovery.newClientProperty();
         newClient.addListener((observableValue, oldValue, newValue) -> Platform.runLater(() -> {
             HBox clientBox = new HBox();
@@ -196,13 +207,18 @@ public class ChatsController {
             });
         }));
 
-        // Destination Combo Box
-        // TODO: 12.06.2021 Don't allow to set destination to yourself
+        // Populate destination Combo Box with destinations
         for (int i = 1; i < 21; i++) {
-            destinationCombo.getItems().add(i);
+            if (i != CONFIG.getAddress())
+                destinationCombo.getItems().add(i);
         }
     }
 
+    /**
+     * Load a given Chat to current view
+     *
+     * @param id destination id
+     */
     public void loadChat(int id) {
         currentChat = id;
         messageBox.getChildren().clear();
@@ -218,6 +234,10 @@ public class ChatsController {
         destinationCombo.getSelectionModel().select(id - 1);
     }
 
+    /**
+     * Stop all receiving and sending
+     * Must be called before changing the lora config
+     */
     public void stop() {
         if (aodvController != null && aodvController.getIsRunning().get()) {
             aodvController.stop();
@@ -233,18 +253,39 @@ public class ChatsController {
         }
     }
 
+    /**
+     * Not implemented yet
+     *
+     * @param mouseEvent mouseEvent
+     */
     public void chatButtonClicked(MouseEvent mouseEvent) {
     }
 
+    /**
+     * Not implemented yet
+     *
+     * @param mouseEvent mouseEvent
+     */
     public void groupButtonClicked(MouseEvent mouseEvent) {
     }
 
-    @FXML
+    /**
+     * Change view to uart setting
+     *
+     * @param mouseEvent mouseEvent
+     * @throws IOException if fxml file could not be found
+     */
     public void settingsButtonClicked(MouseEvent mouseEvent) throws IOException {
         stop();
         App.setRoot("view/uartSettings");
     }
 
+    /**
+     * Turn sending/receiving from lora module on or off
+     * Will stop all threads handling the communication with lora module and other nodes
+     *
+     * @param mouseEvent mouseEvent
+     */
     public void powerToggleClicked(MouseEvent mouseEvent) {
         if (powerToggleButton.isSelected()) {
             powerToggleButton.setText("On");
@@ -262,10 +303,16 @@ public class ChatsController {
         powerToggleButton.setDisable(false);
     }
 
+    /**
+     * Called when user types message and presses enter.
+     * Will send data to the selected destination
+     *
+     * @param keyEvent keyEvent
+     */
     public void cmdTextEnter(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER && !cmdInputTextField.getText().isEmpty()) {
             String userInput = cmdInputTextField.getText().trim();
-            if (userInput.length() > 30){
+            if (userInput.length() > 30) {
                 alert("Message longer then 30 characters!", Alert.AlertType.INFORMATION);
                 return;
             }
@@ -280,10 +327,16 @@ public class ChatsController {
         }
     }
 
+    /**
+     * Called when user types message and presses send button
+     * * Will send data to the selected destination
+     *
+     * @param mouseEvent MouseEvent
+     */
     public void buttonSendClicked(MouseEvent mouseEvent) {
         if (!cmdInputTextField.getText().isEmpty()) {
             String userInput = cmdInputTextField.getText().trim();
-            if (userInput.length() > 30){
+            if (userInput.length() > 30) {
                 alert("Message longer then 30 characters!", Alert.AlertType.INFORMATION);
                 return;
             }
@@ -298,12 +351,23 @@ public class ChatsController {
         }
     }
 
+    /**
+     * Create an alert with given message and alert type
+     *
+     * @param message   message
+     * @param alertType type of alert
+     */
     public void alert(String message, Alert.AlertType alertType) {
         Alert a = new Alert(alertType);
         a.setContentText(message);
         a.show();
     }
 
+    /**
+     * Send data to the EODV Controller trough a queue to the selected destination in the destination combobox
+     *
+     * @param data data to send
+     */
     public void sendData(String data) {
         try {
             if (destinationCombo.getSelectionModel().isEmpty()) {
@@ -320,9 +384,14 @@ public class ChatsController {
         }
     }
 
-    public void displayUserMessage(String cmd) {
+    /**
+     * Displays a user message in the Chat
+     *
+     * @param text text to be displayed
+     */
+    public void displayUserMessage(String text) {
         // Display message
-        Label message = new Label(cmd);
+        Label message = new Label(text);
         message.setAlignment(Pos.CENTER);
         message.getStyleClass().add("user-message");
         message.setWrapText(true);
@@ -355,9 +424,14 @@ public class ChatsController {
         slowScrollToBottom(chatScrollPane);
     }
 
-    public void displayNotUserMessage(String cmd) {
+    /**
+     * Displays a message send to the user in the Chat
+     *
+     * @param text text to be displayed
+     */
+    public void displayNotUserMessage(String text) {
         // Display message
-        Label message = new Label(cmd);
+        Label message = new Label(text);
         message.setAlignment(Pos.CENTER);
         message.getStyleClass().add("not-user-message");
         message.setWrapText(true);
@@ -388,6 +462,12 @@ public class ChatsController {
         slowScrollToBottom(chatScrollPane);
     }
 
+    /**
+     * Write something to the Log (currently system.out)
+     *
+     * @param message message
+     * @param color   color (Currently DARKRED, CYAN or YELLOW will work)
+     */
     public static void writeToLog(String message, Color color) {
         if (color == Color.DARKRED)
             System.out.print("\033[1;31m");
@@ -399,10 +479,21 @@ public class ChatsController {
         System.out.print("\033[0m");
     }
 
+    /**
+     * Write something to the Log (currently system.out)
+     *
+     * @param message message
+     */
     public static void writeToLog(String message) {
         System.out.println(message);
     }
 
+    /**
+     * Scrolls to the bottom of the scroll pane everytime a new Message is received
+     * Will scroll to the end slowly
+     *
+     * @param scrollPane ScrollPane
+     */
     public void slowScrollToBottom(ScrollPane scrollPane) {
         Animation animation = new Timeline(
                 new KeyFrame(Duration.seconds(2),

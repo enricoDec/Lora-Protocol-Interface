@@ -8,7 +8,7 @@ package htw.ai.application.model;
  **/
 public class UserMessage extends ClientMessage {
     /**
-     * Represents a received message
+     * Represents a message send by the User
      *
      * @param data               data to send
      * @param sourceAddress      source address of message

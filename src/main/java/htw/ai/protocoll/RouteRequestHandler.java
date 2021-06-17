@@ -1,5 +1,6 @@
 package htw.ai.protocoll;
 
+import htw.ai.application.controller.ChatsController;
 import htw.ai.protocoll.message.RREQ;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,20 +24,20 @@ public class RouteRequestHandler implements Runnable{
 
     @Override
     public void run() {
-        int MAX_TRIES = 5;
+        int MAX_TRIES = 3;
         while (isRunning.get() && !gotRREP.get()) {
             try {
-                int DELAY_IN_SECONDS = 5;
+                int DELAY_IN_SECONDS = 30;
                 for (int tries = 1; tries <= MAX_TRIES; tries++) {
                     if (gotRREP.get()){
-                        System.out.println("Got RREP");
+                        ChatsController.writeToLog("Got RREP");
                         return;
                     }
-                    System.out.println("Sending RREQ tries: " + tries);
+                    ChatsController.writeToLog("Sending RREQ tries: " + tries);
                     aodvController.getMessagesQueue().put(rreq);
                     Thread.sleep(DELAY_IN_SECONDS * 1000);
                 }
-                System.out.println("Got no RREP");
+                ChatsController.writeToLog("Got no RREP");
                 return;
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -44,8 +45,15 @@ public class RouteRequestHandler implements Runnable{
         }
     }
 
+    /**
+     * Call if RREP to RREQ is received
+     */
     public void gotRREP() {
         this.gotRREP.set(true);
         this.isRunning.set(false);
+    }
+
+    public RREQ getRreq() {
+        return rreq;
     }
 }

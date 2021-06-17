@@ -19,8 +19,9 @@ public class Chats {
     /**
      * Make chat for new Client
      *
-     * @param id      client id (Address)
-     * @param message client message to add
+     * @param id              client id (Address)
+     * @param message         client message to add
+     * @param triggerListener trigger a new message property (if set to false it will be only displayed after the chat is loaded again)
      */
     public void addChat(int id, ClientMessage message, boolean triggerListener) {
         LinkedList<ClientMessage> messages = new LinkedList<>();
@@ -80,9 +81,7 @@ public class Chats {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer();
-        sb.append("chatsList=").append(chatsList);
-        sb.append(", message=").append(newMessage.toString());
-        return sb.toString();
+        return "chatsList=" + chatsList +
+                ", message=" + newMessage.toString();
     }
 }
