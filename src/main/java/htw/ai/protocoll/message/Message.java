@@ -9,6 +9,7 @@ package htw.ai.protocoll.message;
 public abstract class Message {
     private final byte type;
     private byte prevHop;
+    private String destination = null;
 
     /**
      * A Message wraps a type of AODV message
@@ -51,5 +52,21 @@ public abstract class Message {
      */
     public void setPrevHop(byte prevHop) {
         this.prevHop = prevHop;
+    }
+
+    /**
+     * Actual destination of the message (not always same as message destination since some may be broadcast)
+     * @return destination
+     */
+    public String getDestination() {
+        return destination;
+    }
+
+    /**
+     * Actual destination of the message (not always same as message destination since some may be broadcast)
+     * @param destination destination
+     */
+    public void setDestination(String destination) {
+        this.destination = destination;
     }
 }

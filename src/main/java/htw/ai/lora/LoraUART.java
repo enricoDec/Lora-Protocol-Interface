@@ -24,13 +24,13 @@ public class LoraUART implements Runnable {
     private final Config config;
     private final ChatsDiscovery chatsDiscovery;
     private final SerialPort comPort;
-    // message Queue contains payload (after AT+SEND=x)
+    // message Queue contains payload (e.g. after AT+SEND=x)
     private BlockingQueue<byte[]> messageQueue = new ArrayBlockingQueue<>(20);
-    // writeQueue contains AT Commands (ex. AT+CMD)
+    // writeQueue contains AT Commands (e.g. AT+CMD)
     private BlockingQueue<String> commandQueue = new ArrayBlockingQueue<>(20);
-    // contains reply codes from lora (ex. AT,OK)
+    // contains reply codes from lora (e.g. AT,OK)
     private BlockingQueue<String> replyQueue = new ArrayBlockingQueue<>(20);
-    // contains everything else (ex. Model Hima..)
+    // contains everything else (e.g. MODULE:HIMO-01M(V0.4))
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
     // contains received messages from other lora modules
     private BlockingQueue<byte[]> lrQueue = new ArrayBlockingQueue<>(20);

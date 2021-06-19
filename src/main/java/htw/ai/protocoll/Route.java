@@ -1,5 +1,6 @@
 package htw.ai.protocoll;
 
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 
 /**
@@ -15,7 +16,7 @@ public class Route {
     private int hopCount;
     private int nextHop;
     private LinkedList<Node> precursorsList = new LinkedList<>();
-    private long lifetime;
+    private LocalDateTime lifetime;
 
     public Route(int destinationAddress, long destinationSequenceNumber, boolean isValidRoute, int hopCount, int nextHop, long lifetime) {
         this.destinationAddress = destinationAddress;
@@ -23,7 +24,7 @@ public class Route {
         this.isValidRoute = isValidRoute;
         this.hopCount = hopCount;
         this.nextHop = nextHop;
-        this.lifetime = lifetime;
+        this.lifetime = LocalDateTime.now().plusSeconds(lifetime);
     }
 
     public int getDestinationAddress() {
@@ -74,11 +75,11 @@ public class Route {
         this.precursorsList = precursorsList;
     }
 
-    public long getLifetime() {
+    public LocalDateTime getLifetime() {
         return lifetime;
     }
 
-    public void setLifetime(long lifetime) {
+    public void setLifetime(LocalDateTime lifetime) {
         this.lifetime = lifetime;
     }
 }

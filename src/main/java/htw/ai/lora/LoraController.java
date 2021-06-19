@@ -104,9 +104,10 @@ public class LoraController implements Runnable {
                     break;
                 case USER_INPUT:
                     byte[] messageBytes = null;
+                    Message message = null;
                     try {
                         // Wait for user Input
-                        Message message = messagesQueue.poll(100, TimeUnit.MILLISECONDS);
+                        message = messagesQueue.poll(100, TimeUnit.MILLISECONDS);
                         if (message == null)
                             break;
                         messageBytes = message.toMessage();
@@ -120,6 +121,8 @@ public class LoraController implements Runnable {
                         int bytesToSend = messageBytes.length;
                         try {
                             // Send AT+SEND=bytesToSend
+                            if (!message.getDestination().isEmpty())
+                                setAtDestAddr(message.getDestination());
                             writeQueue.put(Lora.AT_SEND.CODE + bytesToSend);
                             // Check reply code
                             replyCode = Lora.valueOfCode(replyQueue.take());
@@ -284,7 +287,7 @@ public class LoraController implements Runnable {
      *
      * @throws InterruptedException Thrown when a thread is waiting, sleeping, or otherwise occupied, and the thread is interrupted.
      */
-    public void setAtDestAddr(String destination) throws InterruptedException {
+    private synchronized void setAtDestAddr(String destination) throws InterruptedException {
         String setDestinationAddr = Lora.AT_DEST.CODE + destination;
         writeQueue.put(setDestinationAddr);
         replyQueue.take();

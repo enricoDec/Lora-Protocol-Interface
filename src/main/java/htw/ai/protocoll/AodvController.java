@@ -38,8 +38,8 @@ public class AodvController implements Runnable {
     // Thread state
     private AtomicBoolean isRunning = new AtomicBoolean(false);
     // List of all route Requests
-    private HashMap<Byte, RouteRequestHandler> routeRequestHandlerMap = new HashMap<>();
-    // List of all messages pending route to be send
+    private HashMap<Byte, MessageRequest> messageRequests = new HashMap<>();
+    // List of all messages pending route to be send or sent and waiting for ACK
     private HashMap<Integer, LinkedList<UserMessage>> pendingMessages = new HashMap<>();
 
     private LoraController loraController;
@@ -61,11 +61,11 @@ public class AodvController implements Runnable {
     private void createRouteRequest(RREQ rreq) {
         incrementSeqNumber();
         rreqID++;
-        setDestination("FFFF");
-        RouteRequestHandler routeRequestHandler = new RouteRequestHandler(rreq, this);
-        Thread thread = new Thread(routeRequestHandler);
+        rreq.setDestination("FFFF");
+        MessageRequest messageRequest = new MessageRequest(rreq, this);
+        Thread thread = new Thread(messageRequest);
         thread.start();
-        routeRequestHandlerMap.put(rreq.getDestinationAddress(), routeRequestHandler);
+        messageRequests.put(rreq.getDestinationAddress(), messageRequest);
     }
 
     /**
@@ -96,7 +96,7 @@ public class AodvController implements Runnable {
      * @param route   Route to destination
      */
     private void createTextRequest(SEND_TEXT_REQUEST message, Route route) {
-        setDestination(String.valueOf(route.getDestinationAddress()));
+        message.setDestination(String.valueOf(route.getDestinationAddress()));
         try {
             messagesQueue.put(message);
         } catch (InterruptedException e) {
@@ -123,10 +123,13 @@ public class AodvController implements Runnable {
      */
     private void route(UserMessage userMessage) {
         // If Valid route for destination already present send SEND_TEXT_REQUEST
-        if (routingTable.containsKey(userMessage.getDestinationAddress())) {
-            ChatsController.writeToLog("Valid route found in table, sending Text Req");
+        Route routeToDestination = routingTable.get(userMessage.getDestinationAddress());
+        if (routeToDestination != null && routeToDestination.isValidRoute()) {
+            ChatsController.writeToLog("Valid route found in table for " + userMessage.getDestinationAddress() + ", sending Text Req");
+            // Create Send Text Request
             SEND_TEXT_REQUEST send_text_request = new SEND_TEXT_REQUEST((byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), (byte) 0, userMessage.getData());
-            createTextRequest(send_text_request, routingTable.get(userMessage.getDestinationAddress()));
+            createTextRequest(send_text_request, routeToDestination);
+            // Put Message in pending Messages until ACK is received
             LinkedList<UserMessage> userMessages = pendingMessages.get(userMessage.getDestinationAddress());
             if (userMessages == null)
                 pendingMessages.put(userMessage.getDestinationAddress(), new LinkedList<>(Collections.singletonList(userMessage)));
@@ -144,7 +147,7 @@ public class AodvController implements Runnable {
         while (isRunning.get()) {
             if (userMessagesQueue.peek() != null) {
                 // If client want to send message start process
-                UserMessage userMessage = null;
+                UserMessage userMessage;
                 try {
                     userMessage = userMessagesQueue.take();
                     ChatsController.writeToLog("User want to send a Message, routing...");
@@ -153,22 +156,22 @@ public class AodvController implements Runnable {
                     e.printStackTrace();
                 }
             } else if (lrQueue.peek() != null) {
-                // If message received do smth
+                // If message received
                 try {
                     byte[] data = lrQueue.take();
                     Message message = decode(data);
                     if (message == null)
                         ChatsController.writeToLog("Bad Packet received");
                     else {
-                        // do shit
                         switch (message.getTYPE()) {
                             case Type.RREP:
                                 RREP rrep = (RREP) message;
-                                if (rrep.getOriginAddress() == config.getAddress() && routeRequestHandlerMap.containsKey(rrep.getDestinationAddress())) {
-                                    routeRequestHandlerMap.get(rrep.getDestinationAddress()).gotRREP();
+                                // If we are the origin address of RREQ, RREP is meant for us -> Insert in routing table
+                                if (rrep.getOriginAddress() == config.getAddress() && messageRequests.containsKey(rrep.getDestinationAddress())) {
+                                    messageRequests.get(rrep.getDestinationAddress()).gotACK();
                                     // RREP-ACK
                                     RREP_ACK rrepAck = new RREP_ACK();
-                                    setDestination(String.valueOf(rrepAck.getPrevHop()));
+                                    rrepAck.setDestination(String.valueOf(rrep.getPrevHop()));
                                     messagesQueue.put(rrepAck);
                                     // Route Found add to table and send
                                     routingTable.put((int) rrep.getDestinationAddress(), new Route(rrep.getDestinationAddress(), rrep.getDestinationSequenceNumber(), true, rrep.getHopCount(), rrep.getPrevHop(), ROUTE_LIFETIME_IN_SECONDS));
@@ -186,19 +189,6 @@ public class AodvController implements Runnable {
                     e.printStackTrace();
                 }
             }
-        }
-    }
-
-    /**
-     * Set the AT+DEST=x
-     *
-     * @param destination set destination to 1-20 or FFFF to broadcast
-     */
-    private void setDestination(String destination) {
-        try {
-            loraController.setAtDestAddr(destination);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
@@ -309,7 +299,9 @@ public class AodvController implements Runnable {
             loraController.stop();
             try {
                 lora_thread.join();
-                routeRequestHandlerMap.forEach((k, v) -> v.gotRREP());
+                // Stop all route Requests threads that are still running
+                messageRequests.entrySet().removeIf(e -> !e.getValue().getIsRunning().get());
+                messageRequests.forEach((k, v) -> v.gotACK());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

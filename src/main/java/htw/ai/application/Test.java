@@ -1,5 +1,7 @@
 package htw.ai.application;
 
+import htw.ai.protocoll.message.RREQ;
+
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : LoraProtocolInterface
@@ -8,8 +10,15 @@ package htw.ai.application;
  **/
 public class Test {
     public static void main(String[] args) {
-        byte Ankommend = 127;
-        byte Momentan = -128;
-        System.out.println((byte) (Ankommend - Momentan));
+//        byte Ankommend = 127;
+//        byte Momentan = -128;
+//        System.out.println((byte) (Ankommend - Momentan));
+
+        RREQ rreq = new RREQ((byte) 1, (byte)1, (byte)1,(byte)1 ,(byte)1, (byte)1, (byte)1);
+        if (rreq.getTYPE() != 1)
+            System.out.println("true");
+        else
+            System.out.println("false");
+        System.out.println(rreq.getTYPE());
     }
 }
