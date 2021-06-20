@@ -14,8 +14,8 @@ public class SEND_TEXT_REQUEST extends Message {
     private byte messageSequenceNumber;
     private String payload;
 
-    public SEND_TEXT_REQUEST(byte originAddress, byte destinationAddress, byte messageSequenceNumber, String payload) {
-        super(Type.SEND_TEXT_REQUEST);
+    public SEND_TEXT_REQUEST(String actualATDestination, byte originAddress, byte destinationAddress, byte messageSequenceNumber, String payload) {
+        super(Type.SEND_TEXT_REQUEST, actualATDestination);
         this.originAddress = originAddress;
         this.destinationAddress = destinationAddress;
         this.messageSequenceNumber = messageSequenceNumber;

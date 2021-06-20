@@ -13,8 +13,8 @@ public class RERR extends Message {
     private byte additionalAddresses;
     private byte additionalSequenceNumber;
 
-    public RERR(byte destinationCount, byte unreachableDestinationAddress, byte unreachableDestinationSequenceNumber, byte additionalAddresses, byte additionalSequenceNumber) {
-        super(Type.RERR);
+    public RERR(String actualATDestination ,byte destinationCount, byte unreachableDestinationAddress, byte unreachableDestinationSequenceNumber, byte additionalAddresses, byte additionalSequenceNumber) {
+        super(Type.RERR, actualATDestination);
         this.destinationCount = destinationCount;
         this.unreachableDestinationAddress = unreachableDestinationAddress;
         this.unreachableDestinationSequenceNumber = unreachableDestinationSequenceNumber;

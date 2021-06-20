@@ -13,12 +13,5 @@ public class Test {
 //        byte Ankommend = 127;
 //        byte Momentan = -128;
 //        System.out.println((byte) (Ankommend - Momentan));
-
-        RREQ rreq = new RREQ((byte) 1, (byte)1, (byte)1,(byte)1 ,(byte)1, (byte)1, (byte)1);
-        if (rreq.getTYPE() != 1)
-            System.out.println("true");
-        else
-            System.out.println("false");
-        System.out.println(rreq.getTYPE());
     }
 }

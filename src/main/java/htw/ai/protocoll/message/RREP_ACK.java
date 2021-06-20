@@ -7,8 +7,8 @@ package htw.ai.protocoll.message;
  * @since : 10-06-2021
  **/
 public class RREP_ACK extends Message {
-    public RREP_ACK() {
-        super(Type.RREP_ACK);
+    public RREP_ACK(String actualATDestination) {
+        super(Type.RREP_ACK, actualATDestination);
     }
 
     @Override

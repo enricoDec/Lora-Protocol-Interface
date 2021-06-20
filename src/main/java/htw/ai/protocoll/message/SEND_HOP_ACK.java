@@ -9,8 +9,8 @@ package htw.ai.protocoll.message;
 public class SEND_HOP_ACK extends Message {
     private byte messageSequenceNumber;
 
-    public SEND_HOP_ACK(byte messageSequenceNumber) {
-        super(Type.SEND_HOP_ACK);
+    public SEND_HOP_ACK(String actualATDestination, byte messageSequenceNumber) {
+        super(Type.SEND_HOP_ACK, actualATDestination);
         this.messageSequenceNumber = messageSequenceNumber;
     }
 

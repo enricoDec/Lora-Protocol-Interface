@@ -1,6 +1,7 @@
 package htw.ai.lora;
 
 import htw.ai.application.controller.ChatsController;
+import htw.ai.application.model.Chats;
 import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.Message;

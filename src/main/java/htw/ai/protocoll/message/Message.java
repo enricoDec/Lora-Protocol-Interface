@@ -16,8 +16,9 @@ public abstract class Message {
      *
      * @param type type of AODV Message (1-7)
      */
-    public Message(byte type) {
+    public Message(byte type, String destination) {
         this.type = type;
+        this.destination = destination;
     }
 
     /**
@@ -60,13 +61,5 @@ public abstract class Message {
      */
     public String getDestination() {
         return destination;
-    }
-
-    /**
-     * Actual destination of the message (not always same as message destination since some may be broadcast)
-     * @param destination destination
-     */
-    public void setDestination(String destination) {
-        this.destination = destination;
     }
 }

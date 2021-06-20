@@ -20,6 +20,7 @@ public class ClientMessage{
      *
      * @param data data received ex. LR,0012,05,Hello -> Hello
      */
+    @Deprecated
     public ClientMessage(String data) {
         interpret(data);
     }
@@ -33,6 +34,7 @@ public class ClientMessage{
     /**
      * Split data to source address and actual message
      */
+    @Deprecated
     private void interpret(String data) {
         String[] dataSplit = data.split(Lora.DIVIDER.CODE);
         // 0-> LR 1-> source address 2-> bytes number 3-> data

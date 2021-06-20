@@ -2,12 +2,15 @@ package htw.ai.protocoll;
 
 import htw.ai.application.controller.ChatsController;
 import htw.ai.application.model.ChatsDiscovery;
+import htw.ai.application.model.ClientMessage;
 import htw.ai.application.model.UserMessage;
 import htw.ai.lora.LoraController;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.*;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,8 +26,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since : 09-06-2021
  **/
 public class AodvController implements Runnable {
-    private final int ROUTE_LIFETIME_IN_SECONDS = 180;
-    private long sequenceNumber = 0;
+    private final byte ROUTE_LIFETIME_IN_SECONDS = (byte) 180;
+    private byte sequenceNumber = 0;
     private byte rreqID = 0;
 
     // Routing table of all valid routes
@@ -39,8 +42,9 @@ public class AodvController implements Runnable {
     private AtomicBoolean isRunning = new AtomicBoolean(false);
     // List of all route Requests
     private HashMap<Byte, MessageRequest> messageRequests = new HashMap<>();
-    // List of all messages pending route to be send or sent and waiting for ACK
-    private HashMap<Integer, LinkedList<UserMessage>> pendingMessages = new HashMap<>();
+    // List of all messages pending route to be send
+    private HashMap<Integer, LinkedList<UserMessage>> pendingRouteMessages = new HashMap<>();
+    private HashMap<Byte, LinkedList<Message>> pendingACKMessages = new HashMap<>();
 
     private LoraController loraController;
     private Config config;
@@ -59,9 +63,8 @@ public class AodvController implements Runnable {
      * @param rreq RREQ to be send
      */
     private void createRouteRequest(RREQ rreq) {
-        incrementSeqNumber();
+        sequenceNumber++;
         rreqID++;
-        rreq.setDestination("FFFF");
         MessageRequest messageRequest = new MessageRequest(rreq, this);
         Thread thread = new Thread(messageRequest);
         thread.start();
@@ -85,8 +88,27 @@ public class AodvController implements Runnable {
     /**
      * Create a RREP
      */
-    private void createRouteReply() {
-        sequenceNumber = Integer.MAX_VALUE;
+    private void createRouteReply(RREP rrep) {
+        sequenceNumber = Byte.MAX_VALUE;
+        try {
+            messagesQueue.put(rrep);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Create a Text Request
+     *
+     * @param sendTextRequest sendTextRequest
+     */
+    private void createSendTextAck(SEND_TEXT_REQUEST sendTextRequest) {
+        SEND_TEXT_REQUEST_ACK sendTextRequestAck = new SEND_TEXT_REQUEST_ACK(String.valueOf(sendTextRequest.getPrevHop()), (byte) config.getAddress(), sendTextRequest.getDestinationAddress(), sequenceNumber);
+        try {
+            messagesQueue.put(sendTextRequestAck);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -96,24 +118,15 @@ public class AodvController implements Runnable {
      * @param route   Route to destination
      */
     private void createTextRequest(SEND_TEXT_REQUEST message, Route route) {
-        message.setDestination(String.valueOf(route.getDestinationAddress()));
         try {
             messagesQueue.put(message);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Increment the Seq Number
-     */
-    private void incrementSeqNumber() {
-        if (sequenceNumber == 4294967295L)
-            sequenceNumber = 0;
-        else if (sequenceNumber == 2147483647L)
-            sequenceNumber++;
+        if (pendingACKMessages.containsKey(message.getDestinationAddress()))
+            pendingACKMessages.put(message.getDestinationAddress(), new LinkedList<>(Collections.singletonList(message)));
         else
-            sequenceNumber++;
+            pendingACKMessages.get(message.getDestinationAddress()).add(message);
     }
 
     /**
@@ -127,18 +140,23 @@ public class AodvController implements Runnable {
         if (routeToDestination != null && routeToDestination.isValidRoute()) {
             ChatsController.writeToLog("Valid route found in table for " + userMessage.getDestinationAddress() + ", sending Text Req");
             // Create Send Text Request
-            SEND_TEXT_REQUEST send_text_request = new SEND_TEXT_REQUEST((byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), (byte) 0, userMessage.getData());
+            SEND_TEXT_REQUEST send_text_request = new SEND_TEXT_REQUEST(String.valueOf(routeToDestination.getNextHop()), (byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), (byte) 0, userMessage.getData());
             createTextRequest(send_text_request, routeToDestination);
             // Put Message in pending Messages until ACK is received
-            LinkedList<UserMessage> userMessages = pendingMessages.get(userMessage.getDestinationAddress());
+            LinkedList<UserMessage> userMessages = pendingRouteMessages.get(userMessage.getDestinationAddress());
             if (userMessages == null)
-                pendingMessages.put(userMessage.getDestinationAddress(), new LinkedList<>(Collections.singletonList(userMessage)));
+                pendingRouteMessages.put(userMessage.getDestinationAddress(), new LinkedList<>(Collections.singletonList(userMessage)));
             else
                 userMessages.add(userMessage);
         } else {
             // If no Valid route known RREQ
             ChatsController.writeToLog("No valid route found, sending RREQ");
-            createRouteRequest(new RREQ((byte) 1, (byte) 0, rreqID, (byte) config.getAddress(), (byte) sequenceNumber, (byte) userMessage.getDestinationAddress(), (byte) 0));
+            // Check if RREQ for destination is already created
+            if (messageRequests.get(userMessage.getDestinationAddress()) != null && messageRequests.get(userMessage.getDestinationAddress()).getIsRunning().get()) {
+                // Put message in pending Route Queue
+                pendingRouteMessages.get(userMessage.getDestinationAddress()).add(userMessage);
+            } else
+                createRouteRequest(new RREQ((byte) 1, (byte) 0, rreqID, (byte) config.getAddress(), (byte) sequenceNumber, (byte) userMessage.getDestinationAddress(), (byte) 0));
         }
     }
 
@@ -170,19 +188,59 @@ public class AodvController implements Runnable {
                                 if (rrep.getOriginAddress() == config.getAddress() && messageRequests.containsKey(rrep.getDestinationAddress())) {
                                     messageRequests.get(rrep.getDestinationAddress()).gotACK();
                                     // RREP-ACK
-                                    RREP_ACK rrepAck = new RREP_ACK();
-                                    rrepAck.setDestination(String.valueOf(rrep.getPrevHop()));
+                                    RREP_ACK rrepAck = new RREP_ACK(String.valueOf(rrep.getPrevHop()));
                                     messagesQueue.put(rrepAck);
                                     // Route Found add to table and send
                                     routingTable.put((int) rrep.getDestinationAddress(), new Route(rrep.getDestinationAddress(), rrep.getDestinationSequenceNumber(), true, rrep.getHopCount(), rrep.getPrevHop(), ROUTE_LIFETIME_IN_SECONDS));
-                                    LinkedList<UserMessage> userMessages = pendingMessages.get((int) rrep.getDestinationAddress());
+                                    LinkedList<UserMessage> userMessages = pendingRouteMessages.get((int) rrep.getDestinationAddress());
+
+                                    // Send Text Message for each pending message
                                     if (userMessages != null) {
                                         for (UserMessage userMessage : userMessages) {
-                                            createTextRequest(new SEND_TEXT_REQUEST((byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), (byte) sequenceNumber, userMessage.getData()), routingTable.get(userMessage.getDestinationAddress()));
+                                            createTextRequest(new SEND_TEXT_REQUEST(String.valueOf(routingTable.get(userMessage.getDestinationAddress()).getNextHop()),
+                                                    (byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), (byte) sequenceNumber, userMessage.getData()), routingTable.get(userMessage.getDestinationAddress()));
                                         }
                                     }
                                 }
                                 break;
+                            case Type.RREP_ACK:
+                                RREP_ACK rrepAck = (RREP_ACK) message;
+                                break;
+                            case Type.SEND_TEXT_REQUEST:
+                                SEND_TEXT_REQUEST sendTextRequest = (SEND_TEXT_REQUEST) message;
+                                // If we the destination
+                                if (sendTextRequest.getDestinationAddress() == config.getAddress()) {
+                                    chatsDiscovery.newClient(new ClientMessage(sendTextRequest.getPayload(), sendTextRequest.getOriginAddress(), sendTextRequest.getDestinationAddress()));
+                                }
+                                break;
+                            case Type.SEND_TEXT_REQUEST_ACK:
+                                SEND_TEXT_REQUEST_ACK sendTextRequestAck = (SEND_TEXT_REQUEST_ACK) message;
+                                // TODO: 19.06.2021 Implement ACK
+                                break;
+                            case Type.RERR:
+                                RERR rerr = (RERR) message;
+                                break;
+                            case Type.RREQ:
+                                RREQ rreq = (RREQ) message;
+                                // Update routing table
+                                routingTable.entrySet()
+                                        .removeIf(
+                                                e -> (e.getValue().getLifetime().isBefore(LocalDateTime.now()))
+                                        );
+                                // If RREQ not for me, check if I know route else forward
+                                if (rreq.getDestinationAddress() != config.getAddress()) {
+                                    Route route = routingTable.get((int) rreq.getDestinationAddress());
+                                    createRouteReply(new RREP(String.valueOf(route.getNextHop()), route.getHopCount(), rreq.getOriginAddress(),
+                                            rreq.getDestinationAddress(), route.getDestinationSequenceNumber(), (byte) Duration.between(route.getLifetime(), LocalDateTime.now()).toSeconds()));
+                                } else {
+                                    // If RREQ destination is me reply with RREP
+                                    createRouteReply(new RREP(String.valueOf(rreq.getPrevHop()), (byte) (rreq.getHopCount() + 1), rreq.getOriginAddress(), rreq.getDestinationAddress(), sequenceNumber, ROUTE_LIFETIME_IN_SECONDS));
+                                }
+                                break;
+                            case Type.SEND_HOP_ACK:
+                                SEND_HOP_ACK sendHopAck = (SEND_HOP_ACK) message;
+                                break;
+
                         }
                     }
                 } catch (InterruptedException e) {
@@ -190,6 +248,7 @@ public class AodvController implements Runnable {
                 }
             }
         }
+
     }
 
     /**
@@ -224,21 +283,21 @@ public class AodvController implements Runnable {
             case (Type.RREP): {
                 if (data.length != 6)
                     return null;
-                RREP rrep = new RREP(data[1], data[2], data[3], data[4], data[5]);
+                RREP rrep = new RREP("", data[1], data[2], data[3], data[4], data[5]);
                 rrep.setPrevHop(prevHop);
                 return rrep;
             }
             case (Type.RERR): {
                 if (data.length != 6)
                     return null;
-                RERR rrer = new RERR(data[1], data[2], data[3], data[4], data[5]);
+                RERR rrer = new RERR("", data[1], data[2], data[3], data[4], data[5]);
                 rrer.setPrevHop(prevHop);
                 return rrer;
             }
             case (Type.RREP_ACK): {
                 if (data.length != 1)
                     return null;
-                RREP_ACK rrepAck = new RREP_ACK();
+                RREP_ACK rrepAck = new RREP_ACK("");
                 rrepAck.setPrevHop(prevHop);
                 return rrepAck;
             }
@@ -247,21 +306,21 @@ public class AodvController implements Runnable {
                     return null;
                 byte[] payloadBytes = Arrays.copyOfRange(data, 4, data.length);
                 String payload = new String(payloadBytes, StandardCharsets.US_ASCII);
-                SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST(data[1], data[2], data[3], payload);
+                SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST("", data[1], data[2], data[3], payload);
                 sendTextRequest.setPrevHop(prevHop);
                 return sendTextRequest;
             }
             case (Type.SEND_HOP_ACK): {
                 if (data.length != 2)
                     return null;
-                SEND_HOP_ACK sendHopAck = new SEND_HOP_ACK(data[1]);
+                SEND_HOP_ACK sendHopAck = new SEND_HOP_ACK("", data[1]);
                 sendHopAck.setPrevHop(prevHop);
                 return sendHopAck;
             }
             case (Type.SEND_TEXT_REQUEST_ACK): {
                 if (data.length != 4)
                     return null;
-                SEND_TEXT_REQUEST_ACK sendTextRequestAck = new SEND_TEXT_REQUEST_ACK(data[1], data[2], data[3]);
+                SEND_TEXT_REQUEST_ACK sendTextRequestAck = new SEND_TEXT_REQUEST_ACK("", data[1], data[2], data[3]);
                 sendTextRequestAck.setPrevHop(prevHop);
                 return sendTextRequestAck;
             }

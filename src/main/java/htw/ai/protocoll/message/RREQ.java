@@ -27,7 +27,7 @@ public class RREQ extends Message {
      * @param destinationSequenceNumber destinationSequenceNumber
      */
     public RREQ(byte uFlag, byte hopCount, byte rreqID, byte originAddress, byte originSequenceNumber, byte destinationAddress, byte destinationSequenceNumber) {
-        super(Type.RREQ);
+        super(Type.RREQ, "FFFF");
         this.uFlag = uFlag;
         this.hopCount = hopCount;
         this.originAddress = originAddress;
