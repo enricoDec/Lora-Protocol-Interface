@@ -206,13 +206,9 @@ public class LoraController implements Runnable {
             atGetVersion();
             // Set Destination Address
             setAtDestAddr("FFFF");
-            // Send something
-            String hello = "Client " + config.getAddress() + " started.";
-            writeQueue.put(Lora.AT_SEND.CODE + hello.length());
-            replyQueue.take();
-            writeQueue.put(hello);
-            replyQueue.take();
-            replyQueue.take();
+            // Set Sending mode
+            setAtRX();
+            System.out.println("Setup done");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -293,6 +289,12 @@ public class LoraController implements Runnable {
         replyQueue.take();
     }
 
+    private void setAtRX() throws InterruptedException {
+        String atRX = Lora.AT_RX.CODE;
+        writeQueue.put(atRX);
+        replyQueue.take();
+    }
+
     /**
      * Send some random data
      *
@@ -302,7 +304,7 @@ public class LoraController implements Runnable {
         ChatsController.writeToLog("Sending " + numOfBytes + " bytes of random data");
         byte[] array = new byte[numOfBytes];
         new Random().nextBytes(array);
-        String generatedString = new String(array, StandardCharsets.UTF_8);
+        String generatedString = new String(array, StandardCharsets.US_ASCII);
         try {
             writeQueue.put(generatedString);
             replyQueue.take();

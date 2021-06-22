@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @version : 1.0
  * @since : 12-06-2021
  **/
-public class MessageRequest implements Runnable{
+public class MessageRequest implements Runnable {
     private final Message message;
     private final AtomicBoolean isRunning = new AtomicBoolean(true);
     private final AodvController aodvController;
@@ -31,13 +31,17 @@ public class MessageRequest implements Runnable{
             try {
                 int DELAY_IN_SECONDS = 30;
                 for (int tries = 1; tries <= MAX_TRIES; tries++) {
-                    if (gotReply.get()){
+                    if (gotReply.get()) {
                         ChatsController.writeToLog("Got ACK");
                         return;
                     }
                     ChatsController.writeToLog("Sending Message tries: " + tries);
                     aodvController.getMessagesQueue().put(message);
-                    Thread.sleep(DELAY_IN_SECONDS * 1000);
+                    try {
+                        Thread.sleep(DELAY_IN_SECONDS * 1000);
+                    } catch (InterruptedException e) {
+                        // Ignore
+                    }
                 }
                 ChatsController.writeToLog("Got no ACK");
                 gotReply.set(true);

@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author : Enrico Gamil Toros de Chadarevian
@@ -265,9 +266,9 @@ public class AodvController implements Runnable {
                 try {
                     byte[] data = lrQueue.take();
                     Message message = decode(data);
-                    if (message == null)
-                        ChatsController.writeToLog("Bad Packet received");
-                    else {
+                    if (message == null) {
+                        ChatsController.writeToLog("Bad Packet received, could not parse.");
+                    } else {
                         switch (message.getTYPE()) {
                             case Type.RREP:
                                 RREP rrep = (RREP) message;
@@ -308,6 +309,13 @@ public class AodvController implements Runnable {
                                 RERR rerr = (RERR) message;
                                 break;
                             case Type.RREQ:
+                                // 1. Reverse Route
+                                // 2. Check seq
+                                // 3. Hop++ der RREQ
+                                // 4. Create entry or update
+                                // 5. Forward route if not destination or invalid route or none in table
+                                // 6. If intermediate or destination RREP
+
                                 RREQ rreq = (RREQ) message;
                                 // Update routing table
                                 routingTable.forEach((key, value) -> {
@@ -317,8 +325,14 @@ public class AodvController implements Runnable {
                                 // If RREQ not for me, check if I know route else forward
                                 if (rreq.getDestinationAddress() != config.getAddress()) {
                                     Route route = routingTable.get((int) rreq.getDestinationAddress());
-                                    createRouteReply(new RREP(String.valueOf(route.getNextHop()), route.getHopCount(), rreq.getOriginAddress(),
-                                            rreq.getDestinationAddress(), route.getDestinationSequenceNumber(), (byte) Duration.between(route.getLifetime(), LocalDateTime.now()).toSeconds()));
+                                    // Got no route forward REQ
+                                    if (route == null) {
+                                        // TODO: 22.06.2021 Test
+                                        handleRouteRequest(rreq);
+                                    } else {
+                                        createRouteReply(new RREP(String.valueOf(route.getNextHop()), route.getHopCount(), rreq.getOriginAddress(),
+                                                rreq.getDestinationAddress(), route.getDestinationSequenceNumber(), (byte) Duration.between(route.getLifetime(), LocalDateTime.now()).toSeconds()));
+                                    }
                                 } else {
                                     // If RREQ destination is me reply with RREP
                                     createRouteReply(new RREP(String.valueOf(rreq.getPrevHop()), (byte) (rreq.getHopCount() + 1), rreq.getOriginAddress(), rreq.getDestinationAddress(), sequenceNumber, ROUTE_LIFETIME_IN_SECONDS));
@@ -350,13 +364,23 @@ public class AodvController implements Runnable {
         // First 12 bytes are atPacket
         if (bytes.length < 10)
             return null;
+        // Copy LR,ADDR,NUMB_BYTES,
         byte[] atPacketBytes = Arrays.copyOfRange(bytes, 0, 10);
-        byte[] data = Arrays.copyOfRange(bytes, 11, bytes.length);
+        // Get ADDR
         String at = new String(atPacketBytes, StandardCharsets.US_ASCII);
         String[] atPacket = at.split(",");
         byte prevHop = (byte) Integer.parseInt(atPacket[1]);
 
-        switch (data[0]) {
+        // Copy AODV Message without Lora header
+        byte[] data = Arrays.copyOfRange(bytes, 11, bytes.length);
+
+        ChatsController.writeToLog("Got Message from: " + prevHop);
+        for (Byte b : data) {
+            System.out.print(b + " ");
+        }
+        System.out.println();
+
+        switch ((int) data[0]) {
             case (Type.RREQ): {
                 if (data.length != 8)
                     return null;
@@ -448,15 +472,19 @@ public class AodvController implements Runnable {
                 loraController.stop();
                 try {
                     lora_thread.join();
+                    ChatsController.writeToLog("Lora Controller ended");
                     // Stop all route Requests threads that are still running
+                    AtomicInteger i = new AtomicInteger();
                     messageRequestThreads.forEach(t -> {
-                        if (t.isAlive())
+                        if (t.isAlive()) {
                             t.interrupt();
+                            i.getAndIncrement();
+                        }
                     });
+                    ChatsController.writeToLog(i.get() + " Message Request Thread(s) were interrupted.");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                ChatsController.writeToLog("Lora Controller Thread ended");
             }
         }
     }

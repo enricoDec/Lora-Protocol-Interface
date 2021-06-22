@@ -126,8 +126,12 @@ public class LoraUART implements Runnable {
             // Reply codes
             // Remove EOF
             data = data.substring(0, data.length() - 2);
+            byte[] byteDataNoEOF = new byte[byteData.length - 2];
+            System.arraycopy(byteData, 0, byteDataNoEOF, 0, byteData.length - 2);
+
             if (data.startsWith(Lora.AT.CODE)) {
                 try {
+                    System.out.println(data);
                     replyQueue.put(data);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -137,7 +141,7 @@ public class LoraUART implements Runnable {
             // Incoming messages
             else if (data.startsWith(Lora.LR.CODE)) {
                 try {
-                    lrQueue.put(byteData);
+                    lrQueue.put(byteDataNoEOF);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -181,7 +185,10 @@ public class LoraUART implements Runnable {
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         comPort.writeBytes(buffer, buffer.length);
 
-        ChatsController.writeToLog(new String(buffer, StandardCharsets.US_ASCII), Color.YELLOW);
+        for (Byte b : data) {
+            System.out.print(b + " ");
+        }
+        System.out.println();
     }
 
     /**
