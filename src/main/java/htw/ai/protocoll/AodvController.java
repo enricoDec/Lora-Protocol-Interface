@@ -77,6 +77,10 @@ public class AodvController implements Runnable {
      * @param rreq RREQ to be handled
      */
     private void handleRouteRequest(RREQ rreq) {
+        // Don't handle own RREQs
+        if (rreq.getOriginAddress() == config.getAddress())
+            return;
+
         if (rreq.getDestinationAddress() != (byte) config.getAddress()) {
             // Am Intermediate Node
 
@@ -97,18 +101,23 @@ public class AodvController implements Runnable {
         }
     }
 
-    /**
-     * Create a Text Request
-     *
-     * @param sendTextRequest sendTextRequest
-     */
-    private void createSendTextAck(SEND_TEXT_REQUEST sendTextRequest) {
-        SEND_TEXT_REQUEST_ACK sendTextRequestAck = new SEND_TEXT_REQUEST_ACK(String.valueOf(sendTextRequest.getPrevHop()), (byte) config.getAddress(), sendTextRequest.getDestinationAddress(), sequenceNumber);
-        try {
-            messagesQueue.put(sendTextRequestAck);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    private void handleRouteReply(RREP rrep) {
+    }
+
+    private void createRouteError(RERR rerr) {
+
+    }
+
+    private void handleRouteError(RERR rerr) {
+
+    }
+
+    private void createRouteReplyACK(RREP_ACK rrepAck) {
+
+    }
+
+    private void handleRouteReplyACK(RREP_ACK rrepAck) {
+
     }
 
     /**
@@ -127,6 +136,26 @@ public class AodvController implements Runnable {
             pendingACKMessages.put(message.getDestinationAddress(), new LinkedList<>(Collections.singletonList(message)));
         else
             pendingACKMessages.get(message.getDestinationAddress()).add(message);
+    }
+
+    private void handleTextRequest(SEND_TEXT_REQUEST message) {
+
+    }
+
+    private void createHopACK(SEND_HOP_ACK sendHopAck) {
+
+    }
+
+    private void handleHopACK(SEND_HOP_ACK sendHopAck) {
+
+    }
+
+    private void createTextRequestACK(SEND_TEXT_REQUEST_ACK sendTextRequestAck) {
+
+    }
+
+    private void handleTextRequestACK(SEND_TEXT_REQUEST_ACK sendTextRequestAck) {
+
     }
 
     /**
@@ -223,10 +252,10 @@ public class AodvController implements Runnable {
                             case Type.RREQ:
                                 RREQ rreq = (RREQ) message;
                                 // Update routing table
-                                routingTable.entrySet()
-                                        .removeIf(
-                                                e -> (e.getValue().getLifetime().isBefore(LocalDateTime.now()))
-                                        );
+                                routingTable.forEach((key, value) -> {
+                                    if (value.getLifetime().isBefore(LocalDateTime.now()))
+                                        value.setValidRoute(false);
+                                });
                                 // If RREQ not for me, check if I know route else forward
                                 if (rreq.getDestinationAddress() != config.getAddress()) {
                                     Route route = routingTable.get((int) rreq.getDestinationAddress());
@@ -240,7 +269,6 @@ public class AodvController implements Runnable {
                             case Type.SEND_HOP_ACK:
                                 SEND_HOP_ACK sendHopAck = (SEND_HOP_ACK) message;
                                 break;
-
                         }
                     }
                 } catch (InterruptedException e) {
@@ -252,7 +280,8 @@ public class AodvController implements Runnable {
     }
 
     /**
-     * Decode an incoming message to wrapper
+     * Decode an incoming message to wrapper.
+     * Returns null if message malformed or invalid.
      *
      * @param bytes received bytes
      * @return wrapped Message
@@ -261,7 +290,7 @@ public class AodvController implements Runnable {
         // LR , ADDR , NUMB_BYTES ,  ......
         // 01 2 3456 7 89         10 11-x
         // First 12 bytes are atPacket
-        if (bytes.length < 11)
+        if (bytes.length < 10)
             return null;
         byte[] atPacketBytes = Arrays.copyOfRange(bytes, 0, 10);
         byte[] data = Arrays.copyOfRange(bytes, 11, bytes.length);
@@ -270,9 +299,6 @@ public class AodvController implements Runnable {
         byte prevHop = (byte) Integer.parseInt(atPacket[1]);
 
         switch (data[0]) {
-            case (Type.CUSTOM): {
-                break;
-            }
             case (Type.RREQ): {
                 if (data.length != 8)
                     return null;

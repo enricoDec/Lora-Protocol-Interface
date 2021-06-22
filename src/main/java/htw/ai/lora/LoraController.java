@@ -134,7 +134,7 @@ public class LoraController implements Runnable {
                             e.printStackTrace();
                         }
                     } else {
-                        ChatsController.writeToLog("Message ignored, bad Type.");
+                        ChatsController.writeToLog("Message ignored, bad Type or malformed.");
                         loraState = LoraState.USER_INPUT;
                     }
                     break;

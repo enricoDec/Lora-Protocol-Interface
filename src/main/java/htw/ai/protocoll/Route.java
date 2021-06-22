@@ -82,4 +82,17 @@ public class Route {
     public void setLifetime(LocalDateTime lifetime) {
         this.lifetime = lifetime;
     }
+
+    @Override
+    public String toString() {
+        return "Route{" +
+                "destinationAddress=" + destinationAddress +
+                ", destinationSequenceNumber=" + destinationSequenceNumber +
+                ", isValidRoute=" + isValidRoute +
+                ", hopCount=" + hopCount +
+                ", nextHop=" + nextHop +
+                ", precursorsList=" + precursorsList +
+                ", lifetime=" + lifetime +
+                '}';
+    }
 }

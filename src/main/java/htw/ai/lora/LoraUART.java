@@ -115,12 +115,15 @@ public class LoraUART implements Runnable {
         // Check if any bytes are available to be read else close port and check if new data available to be written
         if (comPort.bytesAvailable() > 0) {
             // Keep reading until EOF is reached
+            // TODO: 21.06.21 Fix this
+            // LR,0012,02,(EOF)EOF
             while (!data.contains(Lora.EOF.CODE)) {
                 byteData = new byte[comPort.bytesAvailable()];
                 comPort.readBytes(byteData, byteData.length);
                 data = data.concat(new String(byteData, StandardCharsets.US_ASCII));
             }
-            // Split reply codes from incoming messages
+            // Split messages to appropriate queue
+
             // Reply codes
             // Remove EOF
             data = data.substring(0, data.length() - 2);
@@ -131,6 +134,7 @@ public class LoraUART implements Runnable {
                     e.printStackTrace();
                 }
             }
+
             // Incoming messages
             else if (data.startsWith(Lora.LR.CODE)) {
                 try {
@@ -138,7 +142,9 @@ public class LoraUART implements Runnable {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            } // Unknown messages
+            }
+
+            // Unknown messages
             else {
                 ChatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);
                 try {
@@ -175,6 +181,8 @@ public class LoraUART implements Runnable {
         System.arraycopy(eof, 0, buffer, data.length, eof.length);
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         comPort.writeBytes(buffer, buffer.length);
+
+        ChatsController.writeToLog(new String(buffer, StandardCharsets.US_ASCII), Color.YELLOW);
     }
 
     /**
