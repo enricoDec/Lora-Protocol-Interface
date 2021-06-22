@@ -115,8 +115,7 @@ public class LoraUART implements Runnable {
         // Check if any bytes are available to be read else close port and check if new data available to be written
         if (comPort.bytesAvailable() > 0) {
             // Keep reading until EOF is reached
-            // TODO: 21.06.21 Fix this
-            // LR,0012,02,(EOF)EOF
+            // TODO: 21.06.2021 Fix bug EOF could be in the middle of the message
             while (!data.contains(Lora.EOF.CODE)) {
                 byteData = new byte[comPort.bytesAvailable()];
                 comPort.readBytes(byteData, byteData.length);
