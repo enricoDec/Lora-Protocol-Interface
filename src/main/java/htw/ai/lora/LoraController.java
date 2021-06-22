@@ -1,5 +1,6 @@
 package htw.ai.lora;
 
+import com.fazecast.jSerialComm.SerialPortInvalidPortException;
 import htw.ai.application.controller.ChatsController;
 import htw.ai.application.model.Chats;
 import htw.ai.application.model.ChatsDiscovery;
@@ -42,11 +43,10 @@ public class LoraController implements Runnable {
     private BlockingQueue<String> unknownQueue;
     private AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    public LoraController(Config config, ChatsDiscovery chatsDiscovery, BlockingQueue<Message> messagesQueue) {
+    public LoraController(Config config, ChatsDiscovery chatsDiscovery, BlockingQueue<Message> messagesQueue) throws SerialPortInvalidPortException {
         this.config = config;
         this.messagesQueue = messagesQueue;
         this.loraState = LoraState.START;
-
         this.loraUART = new LoraUART(config, chatsDiscovery);
         this.writeQueue = loraUART.getCommandQueue();
         this.payloadQueue = loraUART.getMessageQueue();
@@ -65,7 +65,6 @@ public class LoraController implements Runnable {
             loraUART_thread = new Thread(loraUART, "loraUART_thread");
             boolean portOpened = loraUART.initialize();
             loraUART_thread.start();
-
             return portOpened;
         }
         return true;

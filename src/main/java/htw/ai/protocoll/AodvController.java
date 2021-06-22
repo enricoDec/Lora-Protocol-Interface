@@ -1,5 +1,6 @@
 package htw.ai.protocoll;
 
+import com.fazecast.jSerialComm.SerialPortInvalidPortException;
 import htw.ai.application.controller.ChatsController;
 import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.application.model.ClientMessage;
@@ -40,8 +41,10 @@ public class AodvController implements Runnable {
     private BlockingQueue<Message> messagesQueue = new ArrayBlockingQueue<>(20);
     // Thread state
     private AtomicBoolean isRunning = new AtomicBoolean(false);
-    // List of all route Requests
+    // List of all message Requests
     private HashMap<Byte, MessageRequest> messageRequests = new HashMap<>();
+    // List of all the message Request threads
+    private LinkedList<Thread> messageRequestThreads = new LinkedList<>();
     // List of all messages pending route to be send
     private HashMap<Integer, LinkedList<UserMessage>> pendingRouteMessages = new HashMap<>();
     private HashMap<Byte, LinkedList<Message>> pendingACKMessages = new HashMap<>();
@@ -69,6 +72,7 @@ public class AodvController implements Runnable {
         Thread thread = new Thread(messageRequest);
         thread.start();
         messageRequests.put(rreq.getDestinationAddress(), messageRequest);
+        messageRequestThreads.add(thread);
     }
 
     /**
@@ -101,21 +105,50 @@ public class AodvController implements Runnable {
         }
     }
 
+    /**
+     * Handle an incoming RREP
+     *
+     * @param rrep rrep to be handled
+     */
     private void handleRouteReply(RREP rrep) {
     }
 
+    /**
+     * Create a RERR and send
+     *
+     * @param rerr RERR
+     */
     private void createRouteError(RERR rerr) {
 
     }
 
+    /**
+     * Handle an incoming RERR
+     *
+     * @param rerr RERR
+     */
     private void handleRouteError(RERR rerr) {
 
     }
 
+    /**
+     * Create a RREP ACK
+     *
+     * @param rrepAck RREP ACK
+     */
     private void createRouteReplyACK(RREP_ACK rrepAck) {
-
+        try {
+            messagesQueue.put(rrepAck);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
+    /**
+     * Handle an incoming RREP ACK
+     *
+     * @param rrepAck RREP ACK
+     */
     private void handleRouteReplyACK(RREP_ACK rrepAck) {
 
     }
@@ -138,22 +171,47 @@ public class AodvController implements Runnable {
             pendingACKMessages.get(message.getDestinationAddress()).add(message);
     }
 
+    /**
+     * Handle an incoming Text Request
+     *
+     * @param message Send Text Request
+     */
     private void handleTextRequest(SEND_TEXT_REQUEST message) {
 
     }
 
+    /**
+     * Create a SEND HOP ACK
+     *
+     * @param sendHopAck SEND HOP ACK
+     */
     private void createHopACK(SEND_HOP_ACK sendHopAck) {
 
     }
 
+    /**
+     * Handle an incoming SEND HOP ACK
+     *
+     * @param sendHopAck SEND HOP ACK
+     */
     private void handleHopACK(SEND_HOP_ACK sendHopAck) {
 
     }
 
+    /**
+     * Create a SEND TEXT REQUEST ACK
+     *
+     * @param sendTextRequestAck Send Text Request ACK
+     */
     private void createTextRequestACK(SEND_TEXT_REQUEST_ACK sendTextRequestAck) {
 
     }
 
+    /**
+     * Create a SEND TEXT REQUEST ACK
+     *
+     * @param sendTextRequestAck Send Text Request ACK
+     */
     private void handleTextRequestACK(SEND_TEXT_REQUEST_ACK sendTextRequestAck) {
 
     }
@@ -218,7 +276,7 @@ public class AodvController implements Runnable {
                                     messageRequests.get(rrep.getDestinationAddress()).gotACK();
                                     // RREP-ACK
                                     RREP_ACK rrepAck = new RREP_ACK(String.valueOf(rrep.getPrevHop()));
-                                    messagesQueue.put(rrepAck);
+                                    createRouteReplyACK(rrepAck);
                                     // Route Found add to table and send
                                     routingTable.put((int) rrep.getDestinationAddress(), new Route(rrep.getDestinationAddress(), rrep.getDestinationSequenceNumber(), true, rrep.getHopCount(), rrep.getPrevHop(), ROUTE_LIFETIME_IN_SECONDS));
                                     LinkedList<UserMessage> userMessages = pendingRouteMessages.get((int) rrep.getDestinationAddress());
@@ -362,7 +420,12 @@ public class AodvController implements Runnable {
     public boolean initialize() {
         if (!isRunning.get()) {
             isRunning.set(true);
-            loraController = new LoraController(config, chatsDiscovery, messagesQueue);
+            try {
+                loraController = new LoraController(config, chatsDiscovery, messagesQueue);
+            } catch (SerialPortInvalidPortException e) {
+                e.printStackTrace();
+                return false;
+            }
             lora_thread = new Thread(loraController, "Lora_Thread");
             boolean portOpened = loraController.initialize();
             if (!portOpened) {
@@ -381,16 +444,20 @@ public class AodvController implements Runnable {
     public void stop() {
         if (isRunning.get()) {
             isRunning.set(false);
-            loraController.stop();
-            try {
-                lora_thread.join();
-                // Stop all route Requests threads that are still running
-                messageRequests.entrySet().removeIf(e -> !e.getValue().getIsRunning().get());
-                messageRequests.forEach((k, v) -> v.gotACK());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (loraController != null) {
+                loraController.stop();
+                try {
+                    lora_thread.join();
+                    // Stop all route Requests threads that are still running
+                    messageRequestThreads.forEach(t -> {
+                        if (t.isAlive())
+                            t.interrupt();
+                    });
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                ChatsController.writeToLog("Lora Controller Thread ended");
             }
-            ChatsController.writeToLog("Lora Controller Thread ended");
         }
     }
 
@@ -401,4 +468,6 @@ public class AodvController implements Runnable {
     public BlockingQueue<Message> getMessagesQueue() {
         return messagesQueue;
     }
+
+
 }
