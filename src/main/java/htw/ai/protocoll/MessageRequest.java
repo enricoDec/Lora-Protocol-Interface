@@ -36,6 +36,7 @@ public class MessageRequest implements Runnable {
                         return;
                     }
                     ChatsController.writeToLog("Sending Message tries: " + tries);
+                    // TODO: 22.06.2021 Increment Seq id
                     aodvController.getMessagesQueue().put(message);
                     try {
                         Thread.sleep(DELAY_IN_SECONDS * 1000);
