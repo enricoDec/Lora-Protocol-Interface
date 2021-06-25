@@ -93,15 +93,37 @@ public class AodvController implements Runnable {
      * @param rreq RREQ to be handled
      */
     private void handleRouteRequest(RREQ rreq) {
-        // Don't handle own RREQs
-        if (rreq.getOriginAddress() == config.getAddress())
-            return;
+        // 1. Reverse Route
+        // 2. Check seq
+        // 3. Hop++ der RREQ
+        // 4. Create entry or update
+        // 5. Forward route if not destination or invalid route or none in table
+        // 6. If intermediate or destination RREP
 
-        if (rreq.getDestinationAddress() != (byte) config.getAddress()) {
-            // Am Intermediate Node
+        // Update routing table
+        updateTable();
+        // If RREQ not for me, check if I know route else forward
+        if (rreq.getDestinationAddress() != config.getAddress()) {
+            Route route = routingTable.get((int) rreq.getDestinationAddress());
+            // Got no route forward REQ
+            if (route == null) {
+                // Don't handle own RREQs
+                if (rreq.getOriginAddress() == config.getAddress())
+                    return;
 
-        } else if (rreq.getDestinationAddress() == (byte) config.getAddress()) {
-            // Am Destination Node
+                if (rreq.getDestinationAddress() != (byte) config.getAddress()) {
+                    // Am Intermediate Node
+
+                } else if (rreq.getDestinationAddress() == (byte) config.getAddress()) {
+                    // Am Destination Node
+                }
+            } else {
+                createRouteReply(new RREP(String.valueOf(route.getNextHop()), route.getHopCount(), rreq.getOriginAddress(),
+                        rreq.getDestinationAddress(), route.getDestinationSequenceNumber(), (byte) Duration.between(route.getLifetime(), LocalDateTime.now()).toSeconds()));
+            }
+        } else {
+            // If RREQ destination is me reply with RREP
+            createRouteReply(new RREP(String.valueOf(rreq.getPrevHop()), (byte) (rreq.getHopCount() + 1), rreq.getOriginAddress(), rreq.getDestinationAddress(), sequenceNumber, ROUTE_LIFETIME_IN_SECONDS));
         }
     }
 
@@ -123,7 +145,24 @@ public class AodvController implements Runnable {
      * @param rrep rrep to be handled
      */
     private void handleRouteReply(RREP rrep) {
+        // If we are the origin address of RREQ, RREP is meant for us -> Insert in routing table
+        if (rrep.getOriginAddress() == config.getAddress() && messageRequests.containsKey(rrep.getDestinationAddress())) {
+            messageRequests.get(rrep.getDestinationAddress()).gotACK();
+            // RREP-ACK
+            RREP_ACK rrepAck = new RREP_ACK(String.valueOf(rrep.getPrevHop()));
+            createRouteReplyACK(rrepAck);
+            // Route Found add to table and send
+            routingTable.put((int) rrep.getDestinationAddress(), new Route(rrep.getDestinationAddress(), rrep.getDestinationSequenceNumber(), true, rrep.getHopCount(), rrep.getPrevHop(), ROUTE_LIFETIME_IN_SECONDS));
+            LinkedList<UserMessage> userMessages = pendingRouteMessages.get((int) rrep.getDestinationAddress());
 
+            // Send Text Message for each pending message
+            if (userMessages != null) {
+                for (UserMessage userMessage : userMessages) {
+                    createTextRequest(new SEND_TEXT_REQUEST(String.valueOf(routingTable.get(userMessage.getDestinationAddress()).getNextHop()),
+                            (byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), sequenceNumber, userMessage.getData()), routingTable.get(userMessage.getDestinationAddress()));
+                }
+            }
+        }
     }
 
     /**
@@ -187,10 +226,13 @@ public class AodvController implements Runnable {
     /**
      * Handle an incoming Text Request
      *
-     * @param message Send Text Request
+     * @param sendTextRequest Send Text Request
      */
-    private void handleTextRequest(SEND_TEXT_REQUEST message) {
-
+    private void handleTextRequest(SEND_TEXT_REQUEST sendTextRequest) {
+        // If we the destination
+        if (sendTextRequest.getDestinationAddress() == config.getAddress()) {
+            chatsDiscovery.newClient(new ClientMessage(sendTextRequest.getPayload(), sendTextRequest.getOriginAddress(), sendTextRequest.getDestinationAddress()));
+        }
     }
 
     /**
@@ -226,7 +268,7 @@ public class AodvController implements Runnable {
      * @param sendTextRequestAck Send Text Request ACK
      */
     private void handleTextRequestACK(SEND_TEXT_REQUEST_ACK sendTextRequestAck) {
-
+        // TODO: 19.06.2021 Implement ACK
     }
 
     /**
@@ -260,9 +302,20 @@ public class AodvController implements Runnable {
         }
     }
 
+    /**
+     * Update the routing table.
+     */
+    private void updateTable() {
+        routingTable.forEach((key, value) -> {
+            if (value.getLifetime().isBefore(LocalDateTime.now()))
+                value.setValidRoute(false);
+        });
+    }
+
     @Override
     public void run() {
         while (isRunning.get()) {
+            // USER MESSAGE OUTBOUND
             if (userMessagesQueue.peek() != null) {
                 // If client want to send message start process
                 UserMessage userMessage;
@@ -273,85 +326,44 @@ public class AodvController implements Runnable {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                // INCOMING MESSAGE
             } else if (lrQueue.peek() != null) {
-                // If message received
                 try {
                     byte[] data = lrQueue.take();
+                    // Decode incoming bytes to Message object
                     Message message = decode(data);
                     if (message == null) {
                         ChatsController.writeToLog("Bad Packet received, could not parse.");
                     } else {
+                        // Depending on Type of Message do stuff
                         switch (message.getTYPE()) {
                             case Type.RREP:
                                 RREP rrep = (RREP) message;
-                                // If we are the origin address of RREQ, RREP is meant for us -> Insert in routing table
-                                if (rrep.getOriginAddress() == config.getAddress() && messageRequests.containsKey(rrep.getDestinationAddress())) {
-                                    messageRequests.get(rrep.getDestinationAddress()).gotACK();
-                                    // RREP-ACK
-                                    RREP_ACK rrepAck = new RREP_ACK(String.valueOf(rrep.getPrevHop()));
-                                    createRouteReplyACK(rrepAck);
-                                    // Route Found add to table and send
-                                    routingTable.put((int) rrep.getDestinationAddress(), new Route(rrep.getDestinationAddress(), rrep.getDestinationSequenceNumber(), true, rrep.getHopCount(), rrep.getPrevHop(), ROUTE_LIFETIME_IN_SECONDS));
-                                    LinkedList<UserMessage> userMessages = pendingRouteMessages.get((int) rrep.getDestinationAddress());
-
-                                    // Send Text Message for each pending message
-                                    if (userMessages != null) {
-                                        for (UserMessage userMessage : userMessages) {
-                                            createTextRequest(new SEND_TEXT_REQUEST(String.valueOf(routingTable.get(userMessage.getDestinationAddress()).getNextHop()),
-                                                    (byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), sequenceNumber, userMessage.getData()), routingTable.get(userMessage.getDestinationAddress()));
-                                        }
-                                    }
-                                }
+                                handleRouteReply(rrep);
                                 break;
                             case Type.RREP_ACK:
                                 RREP_ACK rrepAck = (RREP_ACK) message;
+                                handleRouteReplyACK(rrepAck);
                                 break;
                             case Type.SEND_TEXT_REQUEST:
                                 SEND_TEXT_REQUEST sendTextRequest = (SEND_TEXT_REQUEST) message;
-                                // If we the destination
-                                if (sendTextRequest.getDestinationAddress() == config.getAddress()) {
-                                    chatsDiscovery.newClient(new ClientMessage(sendTextRequest.getPayload(), sendTextRequest.getOriginAddress(), sendTextRequest.getDestinationAddress()));
-                                }
+                                handleTextRequest(sendTextRequest);
                                 break;
                             case Type.SEND_TEXT_REQUEST_ACK:
                                 SEND_TEXT_REQUEST_ACK sendTextRequestAck = (SEND_TEXT_REQUEST_ACK) message;
-                                // TODO: 19.06.2021 Implement ACK
+                                handleTextRequestACK(sendTextRequestAck);
                                 break;
                             case Type.RERR:
                                 RERR rerr = (RERR) message;
+                                handleRouteError(rerr);
                                 break;
                             case Type.RREQ:
-                                // 1. Reverse Route
-                                // 2. Check seq
-                                // 3. Hop++ der RREQ
-                                // 4. Create entry or update
-                                // 5. Forward route if not destination or invalid route or none in table
-                                // 6. If intermediate or destination RREP
-
                                 RREQ rreq = (RREQ) message;
-                                // Update routing table
-                                routingTable.forEach((key, value) -> {
-                                    if (value.getLifetime().isBefore(LocalDateTime.now()))
-                                        value.setValidRoute(false);
-                                });
-                                // If RREQ not for me, check if I know route else forward
-                                if (rreq.getDestinationAddress() != config.getAddress()) {
-                                    Route route = routingTable.get((int) rreq.getDestinationAddress());
-                                    // Got no route forward REQ
-                                    if (route == null) {
-                                        // TODO: 22.06.2021 Test
-                                        handleRouteRequest(rreq);
-                                    } else {
-                                        createRouteReply(new RREP(String.valueOf(route.getNextHop()), route.getHopCount(), rreq.getOriginAddress(),
-                                                rreq.getDestinationAddress(), route.getDestinationSequenceNumber(), (byte) Duration.between(route.getLifetime(), LocalDateTime.now()).toSeconds()));
-                                    }
-                                } else {
-                                    // If RREQ destination is me reply with RREP
-                                    createRouteReply(new RREP(String.valueOf(rreq.getPrevHop()), (byte) (rreq.getHopCount() + 1), rreq.getOriginAddress(), rreq.getDestinationAddress(), sequenceNumber, ROUTE_LIFETIME_IN_SECONDS));
-                                }
+                                handleRouteRequest(rreq);
                                 break;
                             case Type.SEND_HOP_ACK:
                                 SEND_HOP_ACK sendHopAck = (SEND_HOP_ACK) message;
+                                handleHopACK(sendHopAck);
                                 break;
                         }
                     }
