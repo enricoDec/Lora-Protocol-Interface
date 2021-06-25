@@ -24,7 +24,7 @@ public abstract class Message {
     /**
      * Get the type of the message
      *
-     * @return
+     * @return type
      */
     public byte getTYPE() {
         return type;

@@ -48,6 +48,7 @@ public class AodvController implements Runnable {
     private LinkedList<Thread> messageRequestThreads = new LinkedList<>();
     // List of all messages pending route to be send
     private HashMap<Integer, LinkedList<UserMessage>> pendingRouteMessages = new HashMap<>();
+    // List of all messages send and pending for ack
     private HashMap<Byte, LinkedList<Message>> pendingACKMessages = new HashMap<>();
 
     private LoraController loraController;
@@ -59,6 +60,16 @@ public class AodvController implements Runnable {
         this.userMessagesQueue = userMessagesQueue;
         this.config = config;
         this.chatsDiscovery = chatsDiscovery;
+    }
+
+
+    /**
+     * Increment the Sequence Number
+     *
+     * @return the new value of the sequence Number
+     */
+    public synchronized byte incrementSeqNumber() {
+        return sequenceNumber++;
     }
 
     /**
@@ -112,6 +123,7 @@ public class AodvController implements Runnable {
      * @param rrep rrep to be handled
      */
     private void handleRouteReply(RREP rrep) {
+
     }
 
     /**
@@ -286,7 +298,7 @@ public class AodvController implements Runnable {
                                     if (userMessages != null) {
                                         for (UserMessage userMessage : userMessages) {
                                             createTextRequest(new SEND_TEXT_REQUEST(String.valueOf(routingTable.get(userMessage.getDestinationAddress()).getNextHop()),
-                                                    (byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), (byte) sequenceNumber, userMessage.getData()), routingTable.get(userMessage.getDestinationAddress()));
+                                                    (byte) config.getAddress(), (byte) userMessage.getDestinationAddress(), sequenceNumber, userMessage.getData()), routingTable.get(userMessage.getDestinationAddress()));
                                         }
                                     }
                                 }
