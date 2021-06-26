@@ -1,7 +1,5 @@
 package htw.ai.application;
 
-import htw.ai.protocoll.message.RREQ;
-
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : LoraProtocolInterface

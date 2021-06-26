@@ -2,7 +2,6 @@ package htw.ai.lora;
 
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
 import htw.ai.application.controller.ChatsController;
-import htw.ai.application.model.Chats;
 import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.Message;

@@ -2,6 +2,9 @@ package htw.ai.protocoll;
 
 import htw.ai.application.controller.ChatsController;
 import htw.ai.protocoll.message.Message;
+import htw.ai.protocoll.message.RREP;
+import htw.ai.protocoll.message.RREQ;
+import htw.ai.protocoll.message.Type;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -18,7 +21,7 @@ public class MessageRequest implements Runnable {
     private final AtomicBoolean gotReply = new AtomicBoolean(false);
 
     public MessageRequest(Message message, AodvController aodvController) {
-        if (message.getTYPE() != 1 && message.getTYPE() != 2 && message.getTYPE() != 5)
+        if (message.getTYPE() != Type.RREQ && message.getTYPE() != Type.RREP && message.getTYPE() != Type.SEND_TEXT_REQUEST)
             throw new IllegalArgumentException("Message type " + message.getTYPE() + " invalid");
         this.message = message;
         this.aodvController = aodvController;
@@ -31,6 +34,13 @@ public class MessageRequest implements Runnable {
             try {
                 int DELAY_IN_SECONDS = 30;
                 for (int tries = 1; tries <= MAX_TRIES; tries++) {
+                    // Increase Seq Number
+                    if (tries > 1 && message.getTYPE() == Type.RREQ) {
+                        RREQ rreq = (RREQ) message;
+                        byte seqNumber = aodvController.incrementSeqNumber();
+                        rreq.setOriginSequenceNumber(seqNumber);
+                    }
+
                     if (gotReply.get()) {
                         ChatsController.writeToLog("Got ACK");
                         return;
