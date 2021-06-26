@@ -11,5 +11,19 @@ public class Test {
 //        byte Ankommend = 127;
 //        byte Momentan = -128;
 //        System.out.println((byte) (Ankommend - Momentan));
+
+
+        long start = System.currentTimeMillis();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        long end = System.currentTimeMillis();
+
+        long diff = end - start;
+        System.out.println(diff);
+
+        System.out.println((byte) (180000 / 1000));
     }
 }

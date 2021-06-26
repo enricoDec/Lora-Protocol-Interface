@@ -1,8 +1,5 @@
 package htw.ai.protocoll;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 
 /**
@@ -19,15 +16,23 @@ public class Route {
     private byte nextHop;
     private LinkedList<Node> precursorsList = new LinkedList<>();
     private int precursor = 0;
-    private LocalDateTime lifetime;
+    private long lifetime;
 
+    /**
+     * @param destinationAddress        destination Address
+     * @param destinationSequenceNumber destination Sequence Number
+     * @param validRoute                is the route valid
+     * @param hopCount                  Hop Count
+     * @param nextHop                   next Hop
+     * @param lifetime                  Lifetime of Route in milliseconds
+     */
     public Route(byte destinationAddress, byte destinationSequenceNumber, boolean validRoute, byte hopCount, byte nextHop, long lifetime) {
         this.destinationAddress = destinationAddress;
         this.destinationSequenceNumber = destinationSequenceNumber;
         this.validRoute = validRoute;
         this.hopCount = hopCount;
         this.nextHop = nextHop;
-        this.lifetime = LocalDateTime.now().plusSeconds(lifetime);
+        this.lifetime = System.currentTimeMillis();
     }
 
     public byte getDestinationAddress() {
@@ -79,15 +84,14 @@ public class Route {
     }
 
     public byte getLifetime() {
-        long diff = ChronoUnit.SECONDS.between(this.lifetime, LocalDateTime.now());
+        long diff = (System.currentTimeMillis() - lifetime);
         System.out.println(diff);
-        if (diff < 0)
+        if (diff > AodvController.ROUTE_LIFETIME_IN_MILLIS)
             return 0;
-        else
-            return (byte) diff;
+        return (byte) (180 - diff / 1000);
     }
 
-    public void setLifetime(LocalDateTime lifetime) {
+    public void setLifetime(long lifetime) {
         this.lifetime = lifetime;
     }
 

@@ -10,8 +10,6 @@ import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.*;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since : 09-06-2021
  **/
 public class AodvController implements Runnable {
-    private final byte ROUTE_LIFETIME_IN_SECONDS = (byte) 180;
+    public static final long ROUTE_LIFETIME_IN_MILLIS = 180000; // 180s
     private byte sequenceNumber = 0;
     private byte rreqID = 0;
 
@@ -123,7 +121,7 @@ public class AodvController implements Runnable {
             }
         } else {
             // If RREQ destination is me reply with RREP
-            createRouteReply(new RREP(String.valueOf(rreq.getPrevHop()), (byte) (rreq.getHopCount() + 1), rreq.getOriginAddress(), rreq.getDestinationAddress(), sequenceNumber, ROUTE_LIFETIME_IN_SECONDS));
+            createRouteReply(new RREP(String.valueOf(rreq.getPrevHop()), (byte) (rreq.getHopCount() + 1), rreq.getOriginAddress(), rreq.getDestinationAddress(), sequenceNumber, (byte) 180));
         }
     }
 
@@ -154,7 +152,7 @@ public class AodvController implements Runnable {
             RREP_ACK rrepAck = new RREP_ACK(String.valueOf(rrep.getPrevHop()));
             createRouteReplyACK(rrepAck);
             // Route Found add to table and send
-            routingTable.put((int) rrep.getDestinationAddress(), new Route(rrep.getDestinationAddress(), rrep.getDestinationSequenceNumber(), true, rrep.getHopCount(), rrep.getPrevHop(), ROUTE_LIFETIME_IN_SECONDS));
+            routingTable.put((int) rrep.getDestinationAddress(), new Route(rrep.getDestinationAddress(), rrep.getDestinationSequenceNumber(), true, rrep.getHopCount(), rrep.getPrevHop(), (byte) 180));
             LinkedList<Message> userMessages = pendingRouteMessages.get(rrep.getDestinationAddress());
 
             // Send Text Message for each pending message
