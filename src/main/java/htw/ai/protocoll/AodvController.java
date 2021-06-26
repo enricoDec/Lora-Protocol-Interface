@@ -383,7 +383,6 @@ public class AodvController implements Runnable {
                                 handleHopACK(sendHopAck);
                                 break;
                         }
-                        ChatsController.writeToLog("You got mail");
                         ChatsController.writeToLog(message.toString());
                     }
                 } catch (InterruptedException e) {

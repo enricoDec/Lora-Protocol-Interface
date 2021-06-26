@@ -29,7 +29,7 @@ public class SEND_HOP_ACK extends Message {
 
     @Override
     public String toString() {
-        return "SEND_HOP_ACK{" + "messageSequenceNumber=" + messageSequenceNumber +
+        return "SEND HOP ACK{" + "Message Sequence Number: " + messageSequenceNumber +
                 '}';
     }
 }

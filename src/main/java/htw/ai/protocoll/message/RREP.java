@@ -69,11 +69,11 @@ public class RREP extends Message {
 
     @Override
     public String toString() {
-        return "RREP{" + "hopCount=" + hopCount +
-                ", originAddress=" + originAddress +
-                ", destinationAddress=" + destinationAddress +
-                ", destinationSequenceNumber=" + destinationSequenceNumber +
-                ", lifetime=" + Byte.toUnsignedInt(lifetime) +
+        return "RREP{" + "Hop Count: " + hopCount +
+                ", Origin Address: " + originAddress +
+                ", DestinationAddress: " + destinationAddress +
+                ", DestinationSequenceNumber: " + destinationSequenceNumber +
+                ", Lifetime: " + Byte.toUnsignedInt(lifetime) +
                 '}';
     }
 }

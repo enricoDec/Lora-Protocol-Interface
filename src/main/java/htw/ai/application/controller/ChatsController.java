@@ -209,8 +209,7 @@ public class ChatsController {
 
         // Populate destination Combo Box with destinations
         for (int i = 1; i < 21; i++) {
-            if (i != CONFIG.getAddress())
-                destinationCombo.getItems().add(i);
+            destinationCombo.getItems().add(i);
         }
     }
 

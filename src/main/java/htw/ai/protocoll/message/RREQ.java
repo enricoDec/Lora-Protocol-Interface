@@ -100,13 +100,13 @@ public class RREQ extends Message {
 
     @Override
     public String toString() {
-        return "RREQ{" + "uFlag=" + uFlag +
-                ", hopCount=" + hopCount +
-                ", originAddress=" + originAddress +
-                ", originSequenceNumber=" + originSequenceNumber +
-                ", destinationAddress=" + destinationAddress +
-                ", destinationSequenceNumber=" + destinationSequenceNumber +
-                ", rreqID=" + rreqID +
+        return "RREQ{" + "uFlag: " + uFlag +
+                ", Hop Count: " + hopCount +
+                ", Origin Address: " + originAddress +
+                ", Origin Sequence Number: " + originSequenceNumber +
+                ", Destination Address: " + destinationAddress +
+                ", Destination Sequence Number: " + destinationSequenceNumber +
+                ", RREQ ID=" + rreqID +
                 '}';
     }
 }

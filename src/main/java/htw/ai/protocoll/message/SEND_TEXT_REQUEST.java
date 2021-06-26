@@ -66,10 +66,10 @@ public class SEND_TEXT_REQUEST extends Message {
 
     @Override
     public String toString() {
-        return "SEND_TEXT_REQUEST{" + "originAddress=" + originAddress +
-                ", destinationAddress=" + destinationAddress +
-                ", messageSequenceNumber=" + messageSequenceNumber +
-                ", payload='" + payload + '\'' +
+        return "SEND TEXT REQUEST{" + "Origin Address: " + originAddress +
+                ", Destination Address: " + destinationAddress +
+                ", Message Sequence Number: " + messageSequenceNumber +
+                ", Payload: '" + payload + '\'' +
                 '}';
     }
 }

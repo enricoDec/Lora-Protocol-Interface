@@ -15,7 +15,7 @@ public class RERR extends Message {
     private LinkedList<Byte> additionalAddresses;
     private LinkedList<Byte> additionalSequenceNumber;
 
-    public RERR(String actualATDestination ,byte destinationCount, byte unreachableDestinationAddress,
+    public RERR(String actualATDestination, byte destinationCount, byte unreachableDestinationAddress,
                 byte unreachableDestinationSequenceNumber, LinkedList<Byte> additionalAddresses, LinkedList<Byte> additionalSequenceNumber) {
         super(Type.RERR, actualATDestination);
         this.destinationCount = destinationCount;
@@ -84,11 +84,11 @@ public class RERR extends Message {
 
     @Override
     public String toString() {
-        return "RERR{" + "destinationCount=" + destinationCount +
-                ", unreachableDestinationAddress=" + unreachableDestinationAddress +
-                ", unreachableDestinationSequenceNumber=" + unreachableDestinationSequenceNumber +
-                ", additionalAddresses=" + additionalAddresses +
-                ", additionalSequenceNumber=" + additionalSequenceNumber +
+        return "RERR{" + "Destination Count: " + destinationCount +
+                ", Unreachable Destination Address: " + unreachableDestinationAddress +
+                ", Unreachable Destination Sequence Number: " + unreachableDestinationSequenceNumber +
+                ", Additional Addresses: " + additionalAddresses +
+                ", Additional Sequence Number: " + additionalSequenceNumber +
                 '}';
     }
 }

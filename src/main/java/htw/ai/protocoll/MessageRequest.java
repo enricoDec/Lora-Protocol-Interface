@@ -41,7 +41,6 @@ public class MessageRequest implements Runnable {
                     }
 
                     if (gotReply.get()) {
-                        ChatsController.writeToLog("Got ACK");
                         return;
                     }
                     ChatsController.writeToLog("Sending Message trie(s): " + tries);
