@@ -31,7 +31,7 @@ public class MessageRequest implements Runnable {
         int MAX_TRIES = 3;
         while (isRunning.get() && !gotReply.get()) {
             try {
-                int DELAY_IN_SECONDS = 30;
+                int DELAY_IN_SECONDS = 5;
                 for (int tries = 1; tries <= MAX_TRIES; tries++) {
                     // Increase Seq Number
                     if (tries > 1 && message.getTYPE() == Type.RREQ) {

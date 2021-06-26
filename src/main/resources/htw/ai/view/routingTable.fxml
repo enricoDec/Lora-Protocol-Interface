@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="htw.ai.application.controller.RoutingTable">
+   <children>
+        <TableView fx:id="routingTableView">
+            <columns>
+                <TableColumn fx:id="destinationAddress" editable="false" prefWidth="83.0" text="Dest" />
+                <TableColumn fx:id="destinationSequenceNumber" editable="false" prefWidth="88.0" text="Dest Seq" />
+                <TableColumn fx:id="isValidRoute" editable="false" prefWidth="78.0" text="Valid" />
+                <TableColumn fx:id="hopCount" editable="false" prefWidth="79.0" text="Hops" />
+                <TableColumn fx:id="nextHop" editable="false" prefWidth="89.0" text="Next Hop" />
+                <TableColumn fx:id="precursorsList" editable="false" prefWidth="83.0" text="Precursors" />
+                <TableColumn fx:id="lifetime" editable="false" prefWidth="99.0" text="Lifetime" />
+            </columns>
+        </TableView>
+   </children>
+</VBox>

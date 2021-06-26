@@ -125,7 +125,7 @@ public class LoraUART implements Runnable {
 
             // Reply codes
             // Remove EOF
-            if (data.length() < 3)
+            if (data.length() < 4 || byteData.length < 4)
                 return;
             data = data.substring(0, data.length() - 2);
 

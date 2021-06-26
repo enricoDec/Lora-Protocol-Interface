@@ -119,7 +119,7 @@ public class AodvController implements Runnable {
                 }
             } else {
                 createRouteReply(new RREP(String.valueOf(route.getNextHop()), route.getHopCount(), rreq.getOriginAddress(),
-                        rreq.getDestinationAddress(), route.getDestinationSequenceNumber(), (byte) Duration.between(route.getLifetime(), LocalDateTime.now()).toSeconds()));
+                        rreq.getDestinationAddress(), route.getDestinationSequenceNumber(), route.getLifetime()));
             }
         } else {
             // If RREQ destination is me reply with RREP
@@ -217,16 +217,13 @@ public class AodvController implements Runnable {
      */
     private void createTextRequest(SEND_TEXT_REQUEST sendTextRequest, Route route) {
         byte destination = sendTextRequest.getDestinationAddress();
-        try {
-            sendTextRequest.setDestinationAddress(route.getNextHop());
-            messagesQueue.put(sendTextRequest);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (!pendingACKMessages.containsKey(destination))
-            pendingACKMessages.put(destination, new LinkedList<>(Collections.singletonList(sendTextRequest)));
-        else
-            pendingACKMessages.get(destination).add(sendTextRequest);
+        sendTextRequest.setDestinationAddress(route.getNextHop());
+
+        MessageRequest messageRequest = new MessageRequest(sendTextRequest, this);
+        Thread thread = new Thread(messageRequest);
+        thread.start();
+        messageRequests.put(destination, messageRequest);
+        messageRequestThreads.add(thread);
     }
 
     /**
@@ -235,9 +232,14 @@ public class AodvController implements Runnable {
      * @param sendTextRequest Send Text Request
      */
     private void handleTextRequest(SEND_TEXT_REQUEST sendTextRequest) {
+        createHopACK(new SEND_HOP_ACK(String.valueOf(sendTextRequest.getPrevHop()), sendTextRequest.getMessageSequenceNumber()));
+
         // If we the destination
         if (sendTextRequest.getDestinationAddress() == config.getAddress()) {
             chatsDiscovery.newClient(new ClientMessage(sendTextRequest.getPayload(), sendTextRequest.getOriginAddress(), sendTextRequest.getDestinationAddress()));
+
+            createTextRequestACK(new SEND_TEXT_REQUEST_ACK(String.valueOf(sendTextRequest.getPrevHop()),
+                    sendTextRequest.getOriginAddress(), sendTextRequest.getDestinationAddress(), sendTextRequest.getMessageSequenceNumber()));
         }
     }
 
@@ -247,7 +249,11 @@ public class AodvController implements Runnable {
      * @param sendHopAck SEND HOP ACK
      */
     private void createHopACK(SEND_HOP_ACK sendHopAck) {
-
+        try {
+            messagesQueue.put(sendHopAck);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -265,7 +271,11 @@ public class AodvController implements Runnable {
      * @param sendTextRequestAck Send Text Request ACK
      */
     private void createTextRequestACK(SEND_TEXT_REQUEST_ACK sendTextRequestAck) {
-
+        try {
+            messagesQueue.put(sendTextRequestAck);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -274,7 +284,21 @@ public class AodvController implements Runnable {
      * @param sendTextRequestAck Send Text Request ACK
      */
     private void handleTextRequestACK(SEND_TEXT_REQUEST_ACK sendTextRequestAck) {
-        // TODO: 19.06.2021 Implement ACK
+        // If ACK for me
+        byte destination = sendTextRequestAck.getDestinationAddress();
+        if (sendTextRequestAck.getOriginAddress() == config.getAddress()) {
+            // Stop RREQ
+            for (Message me : messagesQueue) {
+                for (Byte b : me.toMessage()) {
+                    System.out.print(b);
+                }
+                System.out.println();
+            }
+            if (messageRequests.get(destination).getIsRunning().get()) {
+                System.out.println("I'm inside");
+                messageRequests.get(destination).gotACK();
+            }
+        }
     }
 
     /**
@@ -286,7 +310,7 @@ public class AodvController implements Runnable {
         // If Valid route for destination already present send SEND_TEXT_REQUEST
         byte destination = (byte) userMessage.getDestinationAddress();
         Route routeToDestination = routingTable.get(userMessage.getDestinationAddress());
-        if (routeToDestination != null && routeToDestination.isValidRoute()) {
+        if (routeToDestination != null && routeToDestination.getValidRoute()) {
             ChatsController.writeToLog("Valid route found in table for " + userMessage.getDestinationAddress() + ", sending Text Req");
             // Create Send Text Request
             SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST(String.valueOf(routeToDestination.getNextHop()), (byte) config.getAddress(), destination, (byte) 0, userMessage.getData());
@@ -322,7 +346,7 @@ public class AodvController implements Runnable {
      */
     private void updateTable() {
         routingTable.forEach((key, value) -> {
-            if (value.getLifetime().isBefore(LocalDateTime.now()))
+            if (value.getLifetime() > 0)
                 value.setValidRoute(false);
         });
     }
@@ -517,7 +541,8 @@ public class AodvController implements Runnable {
             if (loraController != null) {
                 loraController.stop();
                 try {
-                    lora_thread.join();
+                    lora_thread.join(2000);
+                    lora_thread.interrupt();
                     ChatsController.writeToLog("Lora Controller ended");
                     // Stop all route Requests threads that are still running
                     AtomicInteger i = new AtomicInteger();
@@ -543,5 +568,9 @@ public class AodvController implements Runnable {
 
     public BlockingQueue<Message> getMessagesQueue() {
         return messagesQueue;
+    }
+
+    public HashMap<Integer, Route> getRoutingTable() {
+        return routingTable;
     }
 }

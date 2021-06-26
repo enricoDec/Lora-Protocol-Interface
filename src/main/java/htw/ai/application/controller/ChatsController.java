@@ -18,10 +18,13 @@ import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -32,6 +35,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -66,7 +72,7 @@ public class ChatsController {
     // Currently selected chat
     private int currentChat = -1;
     // AODV Controller
-    private AodvController aodvController;
+    public static AodvController aodvController;
     // AODV Thread
     private Thread aodv_thread;
 
@@ -265,7 +271,10 @@ public class ChatsController {
      *
      * @param mouseEvent mouseEvent
      */
-    public void groupButtonClicked(MouseEvent mouseEvent) {
+    public void groupButtonClicked(MouseEvent mouseEvent) throws IOException {
+        if (powerToggleButton.isSelected()) {
+            App.loadWindow("view/routingTable");
+        }
     }
 
     /**
@@ -498,5 +507,9 @@ public class ChatsController {
                 new KeyFrame(Duration.seconds(2),
                         new KeyValue(scrollPane.vvalueProperty(), 1)));
         animation.play();
+    }
+
+    public AodvController getAodvController() {
+        return aodvController;
     }
 }

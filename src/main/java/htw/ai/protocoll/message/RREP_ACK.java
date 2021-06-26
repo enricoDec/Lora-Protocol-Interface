@@ -15,4 +15,9 @@ public class RREP_ACK extends Message {
     public byte[] toMessage() {
         return new byte[]{getTYPE()};
     }
+
+    @Override
+    public String toString() {
+        return "RREP ACK";
+    }
 }

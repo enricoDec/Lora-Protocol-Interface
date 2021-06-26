@@ -41,6 +41,15 @@ public class App extends Application {
         return fxmlLoader.load();
     }
 
+    public static void loadWindow(String fxml) throws IOException {
+        Parent parent = loadFXML(fxml);
+        Scene newScene = new Scene(parent);
+        Stage stage = new Stage();
+        stage.setTitle("Routing Table");
+        stage.setScene(newScene);
+        stage.show();
+    }
+
     public static void main(String[] args) {
         launch(args);
     }

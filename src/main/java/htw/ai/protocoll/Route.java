@@ -1,6 +1,8 @@
 package htw.ai.protocoll;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 
 /**
@@ -12,16 +14,17 @@ import java.util.LinkedList;
 public class Route {
     private byte destinationAddress;
     private byte destinationSequenceNumber;
-    private boolean isValidRoute;
+    private boolean validRoute;
     private byte hopCount;
     private byte nextHop;
     private LinkedList<Node> precursorsList = new LinkedList<>();
+    private int precursor = 0;
     private LocalDateTime lifetime;
 
-    public Route(byte destinationAddress, byte destinationSequenceNumber, boolean isValidRoute, byte hopCount, byte nextHop, long lifetime) {
+    public Route(byte destinationAddress, byte destinationSequenceNumber, boolean validRoute, byte hopCount, byte nextHop, long lifetime) {
         this.destinationAddress = destinationAddress;
         this.destinationSequenceNumber = destinationSequenceNumber;
-        this.isValidRoute = isValidRoute;
+        this.validRoute = validRoute;
         this.hopCount = hopCount;
         this.nextHop = nextHop;
         this.lifetime = LocalDateTime.now().plusSeconds(lifetime);
@@ -43,12 +46,12 @@ public class Route {
         this.destinationSequenceNumber = destinationSequenceNumber;
     }
 
-    public boolean isValidRoute() {
-        return isValidRoute;
+    public boolean getValidRoute() {
+        return validRoute;
     }
 
     public void setValidRoute(boolean validRoute) {
-        isValidRoute = validRoute;
+        this.validRoute = validRoute;
     }
 
     public byte getHopCount() {
@@ -75,12 +78,25 @@ public class Route {
         this.precursorsList = precursorsList;
     }
 
-    public LocalDateTime getLifetime() {
-        return lifetime;
+    public byte getLifetime() {
+        long diff = ChronoUnit.SECONDS.between(this.lifetime, LocalDateTime.now());
+        System.out.println(diff);
+        if (diff < 0)
+            return 0;
+        else
+            return (byte) diff;
     }
 
     public void setLifetime(LocalDateTime lifetime) {
         this.lifetime = lifetime;
+    }
+
+    public int getPrecursor() {
+        return precursor;
+    }
+
+    public void setPrecursor(int precursor) {
+        this.precursor = precursor;
     }
 
     @Override
@@ -88,7 +104,7 @@ public class Route {
         return "Route{" +
                 "destinationAddress=" + destinationAddress +
                 ", destinationSequenceNumber=" + destinationSequenceNumber +
-                ", isValidRoute=" + isValidRoute +
+                ", isValidRoute=" + validRoute +
                 ", hopCount=" + hopCount +
                 ", nextHop=" + nextHop +
                 ", precursorsList=" + precursorsList +

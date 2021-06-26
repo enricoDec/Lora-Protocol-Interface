@@ -6,7 +6,6 @@ import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.Message;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -35,6 +34,7 @@ public class LoraController implements Runnable {
     private BlockingQueue<Message> messagesQueue;
     // Queue containing commands to write
     private BlockingQueue<String> writeQueue;
+    // Queue containing SEND data
     private BlockingQueue<byte[]> payloadQueue;
     // Queue containing reply data from lora module
     private BlockingQueue<String> replyQueue;
@@ -283,7 +283,8 @@ public class LoraController implements Runnable {
     private synchronized void setAtDestAddr(String destination) throws InterruptedException {
         String setDestinationAddr = Lora.AT_DEST.CODE + destination;
         writeQueue.put(setDestinationAddr);
-        replyQueue.take();
+        replyQueue.poll(200, TimeUnit.MILLISECONDS);
+        unknownQueue.clear();
     }
 
     private void setAtRX() throws InterruptedException {

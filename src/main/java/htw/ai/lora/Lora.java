@@ -1,7 +1,5 @@
 package htw.ai.lora;
 
-import htw.ai.application.controller.ChatsController;
-
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : Lora-Protocol

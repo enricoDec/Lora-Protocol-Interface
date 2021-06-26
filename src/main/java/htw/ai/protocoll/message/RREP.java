@@ -71,8 +71,8 @@ public class RREP extends Message {
     public String toString() {
         return "RREP{" + "Hop Count: " + hopCount +
                 ", Origin Address: " + originAddress +
-                ", DestinationAddress: " + destinationAddress +
-                ", DestinationSequenceNumber: " + destinationSequenceNumber +
+                ", Destination Address: " + destinationAddress +
+                ", Destination Sequence Number: " + destinationSequenceNumber +
                 ", Lifetime: " + Byte.toUnsignedInt(lifetime) +
                 '}';
     }
