@@ -10,15 +10,15 @@ import java.util.LinkedList;
  * @since : 10-06-2021
  **/
 public class Route {
-    private int destinationAddress;
+    private byte destinationAddress;
     private byte destinationSequenceNumber;
     private boolean isValidRoute;
     private byte hopCount;
-    private int nextHop;
+    private byte nextHop;
     private LinkedList<Node> precursorsList = new LinkedList<>();
     private LocalDateTime lifetime;
 
-    public Route(int destinationAddress, byte destinationSequenceNumber, boolean isValidRoute, byte hopCount, int nextHop, long lifetime) {
+    public Route(byte destinationAddress, byte destinationSequenceNumber, boolean isValidRoute, byte hopCount, byte nextHop, long lifetime) {
         this.destinationAddress = destinationAddress;
         this.destinationSequenceNumber = destinationSequenceNumber;
         this.isValidRoute = isValidRoute;
@@ -27,11 +27,11 @@ public class Route {
         this.lifetime = LocalDateTime.now().plusSeconds(lifetime);
     }
 
-    public int getDestinationAddress() {
+    public byte getDestinationAddress() {
         return destinationAddress;
     }
 
-    public void setDestinationAddress(int destinationAddress) {
+    public void setDestinationAddress(byte destinationAddress) {
         this.destinationAddress = destinationAddress;
     }
 
@@ -59,11 +59,11 @@ public class Route {
         this.hopCount = hopCount;
     }
 
-    public int getNextHop() {
+    public byte getNextHop() {
         return nextHop;
     }
 
-    public void setNextHop(int nextHop) {
+    public void setNextHop(byte nextHop) {
         this.nextHop = nextHop;
     }
 

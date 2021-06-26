@@ -110,7 +110,6 @@ public class LoraController implements Runnable {
                         if (message == null)
                             break;
                         messageBytes = message.toMessage();
-                        ChatsController.writeToLog(new String(message.toMessage(), StandardCharsets.US_ASCII), Color.YELLOW);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -163,7 +162,7 @@ public class LoraController implements Runnable {
                     if (equals)
                         loraState = LoraState.SENDED;
                     else {
-                        ChatsController.writeToLog("Unexpected reply: AT,SENDING expected.");
+                        //ChatsController.writeToLog("Unexpected reply: AT,SENDING expected.");
                         loraState = LoraState.USER_INPUT;
                     }
                     break;
@@ -179,7 +178,7 @@ public class LoraController implements Runnable {
                     }
 
                     if (!equal)
-                        ChatsController.writeToLog("Unexpected reply: AT,SENDED expected.");
+                        //ChatsController.writeToLog("Unexpected reply: AT,SENDED expected.");
                     loraState = LoraState.USER_INPUT;
                     break;
             }
@@ -207,7 +206,6 @@ public class LoraController implements Runnable {
             setAtDestAddr("FFFF");
             // Set Sending mode
             setAtRX();
-            System.out.println("Setup done");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -240,7 +238,7 @@ public class LoraController implements Runnable {
             // Himalaya Vendor etc..
             unknownQueue.take();
         } else {
-            ChatsController.writeToLog("Unexpected reply: AT,OK expected.");
+            //ChatsController.writeToLog("Unexpected reply: AT,OK expected.");
         }
     }
 
@@ -278,7 +276,7 @@ public class LoraController implements Runnable {
     }
 
     /**
-     * Set the destination address to FFFF
+     * Set the destination address AT+DEST=
      *
      * @throws InterruptedException Thrown when a thread is waiting, sleeping, or otherwise occupied, and the thread is interrupted.
      */

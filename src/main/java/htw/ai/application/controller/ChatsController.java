@@ -193,7 +193,7 @@ public class ChatsController {
             client.setPadding(new Insets(5));
             clientBox.getChildren().add(client);
 
-            Label clientMessage = new Label("Client " + newValue + " discovered.");
+            Label clientMessage = new Label("Chat with Node " + newValue);
             clientMessage.setAlignment(Pos.TOP_LEFT);
             clientMessage.setWrapText(true);
             clientMessage.setTextFill(Color.WHITE);

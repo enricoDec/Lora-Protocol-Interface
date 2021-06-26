@@ -46,4 +46,12 @@ public class SEND_TEXT_REQUEST_ACK extends Message {
     public byte[] toMessage() {
         return new byte[]{getTYPE(), originAddress, destinationAddress, messageSequenceNumber};
     }
+
+    @Override
+    public String toString() {
+        return "SEND_TEXT_REQUEST_ACK{" + "originAddress=" + originAddress +
+                ", destinationAddress=" + destinationAddress +
+                ", messageSequenceNumber=" + messageSequenceNumber +
+                '}';
+    }
 }

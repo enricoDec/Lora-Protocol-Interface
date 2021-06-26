@@ -97,4 +97,16 @@ public class RREQ extends Message {
     public byte[] toMessage() {
         return new byte[]{getTYPE(), uFlag, hopCount, rreqID, originAddress, originSequenceNumber, destinationAddress, destinationSequenceNumber};
     }
+
+    @Override
+    public String toString() {
+        return "RREQ{" + "uFlag=" + uFlag +
+                ", hopCount=" + hopCount +
+                ", originAddress=" + originAddress +
+                ", originSequenceNumber=" + originSequenceNumber +
+                ", destinationAddress=" + destinationAddress +
+                ", destinationSequenceNumber=" + destinationSequenceNumber +
+                ", rreqID=" + rreqID +
+                '}';
+    }
 }

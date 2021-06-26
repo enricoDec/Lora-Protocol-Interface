@@ -67,7 +67,7 @@ public enum Lora {
                 return e;
             }
         }
-        ChatsController.writeToLog("Unknown Code: " + code);
+        //ChatsController.writeToLog("Unknown Code: " + code);
         return Lora.UNKNOWN;
     }
 }

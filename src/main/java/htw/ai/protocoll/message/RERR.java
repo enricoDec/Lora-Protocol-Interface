@@ -1,5 +1,7 @@
 package htw.ai.protocoll.message;
 
+import java.util.LinkedList;
+
 /**
  * @author : Enrico Gamil Toros de Chadarevian
  * Project name : LoraProtocolInterface
@@ -10,10 +12,11 @@ public class RERR extends Message {
     private byte destinationCount;
     private byte unreachableDestinationAddress;
     private byte unreachableDestinationSequenceNumber;
-    private byte additionalAddresses;
-    private byte additionalSequenceNumber;
+    private LinkedList<Byte> additionalAddresses;
+    private LinkedList<Byte> additionalSequenceNumber;
 
-    public RERR(String actualATDestination ,byte destinationCount, byte unreachableDestinationAddress, byte unreachableDestinationSequenceNumber, byte additionalAddresses, byte additionalSequenceNumber) {
+    public RERR(String actualATDestination ,byte destinationCount, byte unreachableDestinationAddress,
+                byte unreachableDestinationSequenceNumber, LinkedList<Byte> additionalAddresses, LinkedList<Byte> additionalSequenceNumber) {
         super(Type.RERR, actualATDestination);
         this.destinationCount = destinationCount;
         this.unreachableDestinationAddress = unreachableDestinationAddress;
@@ -46,24 +49,46 @@ public class RERR extends Message {
         this.unreachableDestinationSequenceNumber = unreachableDestinationSequenceNumber;
     }
 
-    public byte getAdditionalAddresses() {
+    public LinkedList<Byte> getAdditionalAddresses() {
         return additionalAddresses;
     }
 
-    public void setAdditionalAddresses(byte additionalAddresses) {
+    public void setAdditionalAddresses(LinkedList<Byte> additionalAddresses) {
         this.additionalAddresses = additionalAddresses;
     }
 
-    public byte getAdditionalSequenceNumber() {
+    public LinkedList<Byte> getAdditionalSequenceNumber() {
         return additionalSequenceNumber;
     }
 
-    public void setAdditionalSequenceNumber(byte additionalSequenceNumber) {
+    public void setAdditionalSequenceNumber(LinkedList<Byte> additionalSequenceNumber) {
         this.additionalSequenceNumber = additionalSequenceNumber;
     }
 
     @Override
     public byte[] toMessage() {
-        return new byte[]{getTYPE(), destinationCount, unreachableDestinationAddress, unreachableDestinationSequenceNumber, additionalAddresses, additionalSequenceNumber};
+        int offset = 4;
+        byte[] message = new byte[offset + additionalAddresses.size() + additionalSequenceNumber.size()];
+
+        message[0] = getTYPE();
+        message[1] = destinationCount;
+        message[2] = unreachableDestinationAddress;
+        message[3] = unreachableDestinationSequenceNumber;
+
+        for (int i = 0; offset + i + 1 < message.length; i = i + 2) {
+            message[offset + i] = additionalAddresses.get(i);
+            message[offset + i + 1] = additionalSequenceNumber.get(i);
+        }
+        return message;
+    }
+
+    @Override
+    public String toString() {
+        return "RERR{" + "destinationCount=" + destinationCount +
+                ", unreachableDestinationAddress=" + unreachableDestinationAddress +
+                ", unreachableDestinationSequenceNumber=" + unreachableDestinationSequenceNumber +
+                ", additionalAddresses=" + additionalAddresses +
+                ", additionalSequenceNumber=" + additionalSequenceNumber +
+                '}';
     }
 }

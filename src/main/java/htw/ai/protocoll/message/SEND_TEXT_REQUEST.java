@@ -63,4 +63,13 @@ public class SEND_TEXT_REQUEST extends Message {
         System.arraycopy(data, 0, buffer, header.length, data.length);
         return buffer;
     }
+
+    @Override
+    public String toString() {
+        return "SEND_TEXT_REQUEST{" + "originAddress=" + originAddress +
+                ", destinationAddress=" + destinationAddress +
+                ", messageSequenceNumber=" + messageSequenceNumber +
+                ", payload='" + payload + '\'' +
+                '}';
+    }
 }

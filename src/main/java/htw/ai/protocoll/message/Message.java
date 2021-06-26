@@ -9,7 +9,7 @@ package htw.ai.protocoll.message;
 public abstract class Message {
     private final byte type;
     private byte prevHop;
-    private String destination = null;
+    private String destination;
 
     /**
      * A Message wraps a type of AODV message

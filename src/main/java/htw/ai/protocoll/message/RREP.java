@@ -66,4 +66,14 @@ public class RREP extends Message {
     public byte[] toMessage() {
         return new byte[]{getTYPE(), hopCount, originAddress, destinationAddress, destinationSequenceNumber, lifetime};
     }
+
+    @Override
+    public String toString() {
+        return "RREP{" + "hopCount=" + hopCount +
+                ", originAddress=" + originAddress +
+                ", destinationAddress=" + destinationAddress +
+                ", destinationSequenceNumber=" + destinationSequenceNumber +
+                ", lifetime=" + Byte.toUnsignedInt(lifetime) +
+                '}';
+    }
 }

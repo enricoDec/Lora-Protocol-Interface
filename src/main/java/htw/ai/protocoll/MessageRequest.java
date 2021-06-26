@@ -2,7 +2,6 @@ package htw.ai.protocoll;
 
 import htw.ai.application.controller.ChatsController;
 import htw.ai.protocoll.message.Message;
-import htw.ai.protocoll.message.RREP;
 import htw.ai.protocoll.message.RREQ;
 import htw.ai.protocoll.message.Type;
 
@@ -45,8 +44,7 @@ public class MessageRequest implements Runnable {
                         ChatsController.writeToLog("Got ACK");
                         return;
                     }
-                    ChatsController.writeToLog("Sending Message tries: " + tries);
-                    // TODO: 22.06.2021 Increment Seq id
+                    ChatsController.writeToLog("Sending Message trie(s): " + tries);
                     aodvController.getMessagesQueue().put(message);
                     try {
                         Thread.sleep(DELAY_IN_SECONDS * 1000);
@@ -66,7 +64,7 @@ public class MessageRequest implements Runnable {
     /**
      * Call if RREP to RREQ is received
      */
-    public void gotACK() {
+    public synchronized void gotACK() {
         this.gotReply.set(true);
         this.isRunning.set(false);
     }
