@@ -226,7 +226,6 @@ public class LoraController implements Runnable {
         int timeoutInMillis = 5000;
         String replyCode = replyQueue.poll(timeoutInMillis, TimeUnit.MILLISECONDS);
         if (replyCode == null) {
-            sendRandomData(250);
             // AT,SENDING
             replyQueue.take();
             // AT,SENDED
@@ -292,23 +291,6 @@ public class LoraController implements Runnable {
         replyQueue.take();
     }
 
-    /**
-     * Send some random data
-     *
-     * @param numOfBytes number of bytes to send
-     */
-    private void sendRandomData(int numOfBytes) {
-        ChatsController.writeToLog("Sending " + numOfBytes + " bytes of random data");
-        byte[] array = new byte[numOfBytes];
-        new Random().nextBytes(array);
-        String generatedString = new String(array, StandardCharsets.US_ASCII);
-        try {
-            writeQueue.put(generatedString);
-            replyQueue.take();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Check if reply code equals the expected reply code

@@ -2,11 +2,14 @@ package htw.ai.lora;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
+import htw.ai.application.Client;
 import htw.ai.application.controller.ChatsController;
 import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.lora.config.Config;
 import javafx.scene.paint.Color;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -23,7 +26,6 @@ public class LoraUART implements Runnable {
     private AtomicBoolean running = new AtomicBoolean(false);
     private final Config config;
     private final ChatsDiscovery chatsDiscovery;
-    private final SerialPort comPort;
     // message Queue contains payload (e.g. after AT+SEND=x)
     private BlockingQueue<byte[]> messageQueue = new ArrayBlockingQueue<>(20);
     // writeQueue contains AT Commands (e.g. AT+CMD)
@@ -34,17 +36,16 @@ public class LoraUART implements Runnable {
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
     // contains received messages from other lora modules
     private BlockingQueue<byte[]> lrQueue = new ArrayBlockingQueue<>(20);
+    private Client client;
 
     LoraUART(Config config, ChatsDiscovery chatsDiscovery) throws SerialPortInvalidPortException {
-        comPort = SerialPort.getCommPort(config.getPort());
-        comPort.setBaudRate(config.getBaudRate());
-        comPort.setParity(config.getParity());
-        comPort.setFlowControl(config.getFlowControl());
-        comPort.setNumStopBits(config.getNumberOfStopBits());
-        comPort.setNumDataBits(config.getNumberOfDataBits());
-
         this.config = config;
         this.chatsDiscovery = chatsDiscovery;
+        try {
+            this.client = new Client(new URI("ws://localhost:8001/11"), this);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -56,13 +57,7 @@ public class LoraUART implements Runnable {
         if (running.get())
             ChatsController.writeToLog("LoraUART already running!");
         else {
-            running.set(true);
-            comPort.openPort();
-            if (!comPort.openPort()) {
-                ChatsController.writeToLog("Could not open port " + config.getPort() + " !", Color.DARKRED);
-                ChatsController.writeToLog("Wrong port or blocked by other process.", Color.DARKRED);
-                return false;
-            }
+            client.connect();
         }
         return true;
     }
@@ -75,7 +70,7 @@ public class LoraUART implements Runnable {
             ChatsController.writeToLog("LoraUART already stopped!");
         else {
             running.set(false);
-            comPort.closePort();
+            client.close();
         }
     }
 
@@ -108,55 +103,36 @@ public class LoraUART implements Runnable {
      * Read data from Serial Port
      */
     private synchronized void read() {
-        String data = "";
-        byte[] byteData = null;
-        // Not sure about timeout
-        comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
-        // Check if any bytes are available to be read else close port and check if new data available to be written
-        if (comPort.bytesAvailable() > 0) {
-            // Keep reading until EOF is reached
-            // TODO: 21.06.2021 Fix bug EOF could be in the middle of the message
-            while (!data.contains(Lora.EOF.CODE)) {
-                byteData = new byte[comPort.bytesAvailable()];
-                comPort.readBytes(byteData, byteData.length);
-                data = data.concat(new String(byteData, StandardCharsets.US_ASCII));
+
+    }
+
+    public void decode(String data) {
+        byte[] byteDataNoEOF = data.getBytes(StandardCharsets.US_ASCII);
+
+        if (data.startsWith(Lora.AT.CODE)) {
+            try {
+                replyQueue.put(data);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            // Split messages to appropriate queue
+        }
 
-            // Reply codes
-            // Remove EOF
-            if (data.length() < 3)
-                return;
-            data = data.substring(0, data.length() - 2);
-
-            byte[] byteDataNoEOF = new byte[byteData.length - 2];
-            System.arraycopy(byteData, 0, byteDataNoEOF, 0, byteData.length - 2);
-
-            if (data.startsWith(Lora.AT.CODE)) {
-                try {
-                    replyQueue.put(data);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        // Incoming messages
+        else if (data.startsWith(Lora.LR.CODE)) {
+            try {
+                lrQueue.put(byteDataNoEOF);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+        }
 
-            // Incoming messages
-            else if (data.startsWith(Lora.LR.CODE)) {
-                try {
-                    lrQueue.put(byteDataNoEOF);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            // Unknown messages
-            else {
-                ChatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);
-                try {
-                    unknownQueue.put(data);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        // Unknown messages
+        else {
+            ChatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);
+            try {
+                unknownQueue.put(data);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -168,9 +144,8 @@ public class LoraUART implements Runnable {
      */
     private synchronized void write(String data) {
         byte[] dataWithEOF = (data + Lora.EOF.CODE).getBytes(StandardCharsets.US_ASCII);
-        comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
-        comPort.writeBytes(dataWithEOF, dataWithEOF.length);
 
+        this.client.send(dataWithEOF);
         ChatsController.writeToLog(data, Color.YELLOW);
     }
 
@@ -184,8 +159,8 @@ public class LoraUART implements Runnable {
         byte[] buffer = new byte[data.length + eof.length];
         System.arraycopy(data, 0, buffer, 0, data.length);
         System.arraycopy(eof, 0, buffer, data.length, eof.length);
-        comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
-        comPort.writeBytes(buffer, buffer.length);
+
+        this.client.send(buffer);
 
         System.out.print("\033[1;36m");
         for (Byte b : data) {

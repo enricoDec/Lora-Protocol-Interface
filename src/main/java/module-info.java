@@ -11,6 +11,7 @@ module LoraProtocolInterface {
     requires org.kordamp.ikonli.bootstrapicons;
     // Serial Comm
     requires com.fazecast.jSerialComm;
+    requires Java.WebSocket;
 
     exports htw.ai;
     opens htw.ai to javafx.graphics, javafx.fxml;
