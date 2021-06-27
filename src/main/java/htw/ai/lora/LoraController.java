@@ -115,6 +115,11 @@ public class LoraController implements Runnable {
                     }
                     // If no AT command -> AT+SEND
                     if (messageBytes != null) {
+                        // Logging
+                        System.out.print("\033[1;36m");
+                        System.out.println(message);
+                        System.out.print("\033[0m");
+
                         // Get number of bytes to send
                         int bytesToSend = messageBytes.length;
                         try {

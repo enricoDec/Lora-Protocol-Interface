@@ -16,6 +16,7 @@ public class Route {
     private byte nextHop;
     private LinkedList<Node> precursorsList = new LinkedList<>();
     private int precursor = 0;
+    private int lifetimeUnsigned;
     private long lifetime;
 
     /**
@@ -24,9 +25,8 @@ public class Route {
      * @param validRoute                is the route valid
      * @param hopCount                  Hop Count
      * @param nextHop                   next Hop
-     * @param lifetime                  Lifetime of Route in milliseconds
      */
-    public Route(byte destinationAddress, byte destinationSequenceNumber, boolean validRoute, byte hopCount, byte nextHop, long lifetime) {
+    public Route(byte destinationAddress, byte destinationSequenceNumber, boolean validRoute, byte hopCount, byte nextHop) {
         this.destinationAddress = destinationAddress;
         this.destinationSequenceNumber = destinationSequenceNumber;
         this.validRoute = validRoute;
@@ -85,7 +85,6 @@ public class Route {
 
     public byte getLifetime() {
         long diff = (System.currentTimeMillis() - lifetime);
-        System.out.println(diff);
         if (diff > AodvController.ROUTE_LIFETIME_IN_MILLIS)
             return 0;
         return (byte) (180 - diff / 1000);
@@ -101,6 +100,15 @@ public class Route {
 
     public void setPrecursor(int precursor) {
         this.precursor = precursor;
+    }
+
+    public int getLifetimeUnsigned() {
+        lifetimeUnsigned = Byte.toUnsignedInt(getLifetime());
+        return lifetimeUnsigned;
+    }
+
+    public void setLifetimeUnsigned(int lifetimeUnsigned) {
+        this.lifetimeUnsigned = lifetimeUnsigned;
     }
 
     @Override

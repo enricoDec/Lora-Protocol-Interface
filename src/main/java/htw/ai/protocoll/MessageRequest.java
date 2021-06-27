@@ -1,9 +1,7 @@
 package htw.ai.protocoll;
 
 import htw.ai.application.controller.ChatsController;
-import htw.ai.protocoll.message.Message;
-import htw.ai.protocoll.message.RREQ;
-import htw.ai.protocoll.message.Type;
+import htw.ai.protocoll.message.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -18,6 +16,7 @@ public class MessageRequest implements Runnable {
     private final AtomicBoolean isRunning = new AtomicBoolean(true);
     private final AodvController aodvController;
     private final AtomicBoolean gotReply = new AtomicBoolean(false);
+    private byte destination = 0;
 
     public MessageRequest(Message message, AodvController aodvController) {
         if (message.getTYPE() != Type.RREQ && message.getTYPE() != Type.RREP && message.getTYPE() != Type.SEND_TEXT_REQUEST)
@@ -33,26 +32,39 @@ public class MessageRequest implements Runnable {
             try {
                 int DELAY_IN_SECONDS = 5;
                 for (int tries = 1; tries <= MAX_TRIES; tries++) {
-                    // Increase Seq Number
-                    if (tries > 1 && message.getTYPE() == Type.RREQ) {
-                        RREQ rreq = (RREQ) message;
-                        byte seqNumber = aodvController.incrementSeqNumber();
-                        rreq.setOriginSequenceNumber(seqNumber);
-                    }
-
                     if (gotReply.get()) {
                         return;
                     }
                     ChatsController.writeToLog("Sending Message trie(s): " + tries);
-                    aodvController.getMessagesQueue().put(message);
+                    // Increase Seq Number
+                    if (message.getTYPE() == Type.RREQ) {
+                        RREQ rreq = (RREQ) message;
+                        if (tries > 1) {
+                            byte seqNumber = aodvController.incrementSeqNumber();
+                            rreq.setOriginSequenceNumber(seqNumber);
+                        }
+                        this.destination = rreq.getDestinationAddress();
+                        aodvController.getMessagesQueue().put(rreq);
+                    } else if (message.getTYPE() == Type.RREP){
+                        RREP rrep = (RREP) message;
+                        this.destination = rrep.getDestinationAddress();
+                        aodvController.getMessagesQueue().put(rrep);
+                    } else if (message.getTYPE() == Type.SEND_TEXT_REQUEST) {
+                        SEND_TEXT_REQUEST sendTextRequest = (SEND_TEXT_REQUEST) message;
+                        this.destination = sendTextRequest.getDestinationAddress();
+                        aodvController.getMessagesQueue().put(sendTextRequest);
+                    }
+
                     try {
                         Thread.sleep(DELAY_IN_SECONDS * 1000);
                     } catch (InterruptedException e) {
                         // Ignore
                     }
                 }
-                ChatsController.writeToLog("Got no ACK");
-                gotReply.set(true);
+                this.gotReply.set(true);
+                this.isRunning.set(false);
+                if (destination != 0)
+                    aodvController.removeMessageRequest(destination);
                 return;
             } catch (InterruptedException e) {
                 e.printStackTrace();

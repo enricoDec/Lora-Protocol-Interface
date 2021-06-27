@@ -171,7 +171,7 @@ public class LoraUART implements Runnable {
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         comPort.writeBytes(dataWithEOF, dataWithEOF.length);
 
-        ChatsController.writeToLog(data, Color.YELLOW);
+        //ChatsController.writeToLog(data, Color.YELLOW);
     }
 
     /**
@@ -186,13 +186,6 @@ public class LoraUART implements Runnable {
         System.arraycopy(eof, 0, buffer, data.length, eof.length);
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
         comPort.writeBytes(buffer, buffer.length);
-
-        System.out.print("\033[1;36m");
-        for (Byte b : data) {
-            System.out.print(b + " ");
-        }
-        System.out.println();
-        System.out.print("\033[0m");
     }
 
     /**

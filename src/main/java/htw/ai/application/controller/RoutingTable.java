@@ -40,7 +40,9 @@ public class RoutingTable {
 
     @FXML
     public void initialize() {
-        routingTable.forEach((key, value) -> routingData.add(value));
+        routingTable.forEach((key, value) -> {
+            routingData.add(value);
+        });
 
         destinationAddress.setCellValueFactory(
                 new PropertyValueFactory<>("destinationAddress")
@@ -67,9 +69,14 @@ public class RoutingTable {
         );
 
         lifetime.setCellValueFactory(
-                new PropertyValueFactory<>("lifetime")
+                new PropertyValueFactory<>("lifetimeUnsigned")
         );
 
         routingTableView.setItems(routingData);
+    }
+
+    public void update() {
+        routingData.clear();
+        routingTable.forEach((key, value) -> routingData.add(value));
     }
 }

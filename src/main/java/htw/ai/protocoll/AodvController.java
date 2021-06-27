@@ -8,6 +8,7 @@ import htw.ai.application.model.UserMessage;
 import htw.ai.lora.LoraController;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.*;
+import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -129,7 +130,6 @@ public class AodvController implements Runnable {
      * Create a RREP
      */
     private void createRouteReply(RREP rrep) {
-        sequenceNumber = Byte.MAX_VALUE;
         try {
             messagesQueue.put(rrep);
         } catch (InterruptedException e) {
@@ -146,13 +146,15 @@ public class AodvController implements Runnable {
         // If we are the origin address of RREQ, RREP is meant for us -> Insert in routing table
         if (rrep.getOriginAddress() == config.getAddress() && messageRequests.containsKey(rrep.getDestinationAddress())) {
             // Stop RREQ
-            if (messageRequests.get(rrep.getDestinationAddress()).getIsRunning().get())
+            if (messageRequests.get(rrep.getDestinationAddress()).getIsRunning().get()) {
                 messageRequests.get(rrep.getDestinationAddress()).gotACK();
+                removeMessageRequest(rrep.getDestinationAddress());
+            }
             // RREP-ACK
             RREP_ACK rrepAck = new RREP_ACK(String.valueOf(rrep.getPrevHop()));
             createRouteReplyACK(rrepAck);
             // Route Found add to table and send
-            routingTable.put((int) rrep.getDestinationAddress(), new Route(rrep.getDestinationAddress(), rrep.getDestinationSequenceNumber(), true, rrep.getHopCount(), rrep.getPrevHop(), (byte) 180));
+            routingTable.put((int) rrep.getDestinationAddress(), new Route(rrep.getDestinationAddress(), rrep.getDestinationSequenceNumber(), true, rrep.getHopCount(), rrep.getPrevHop()));
             LinkedList<Message> userMessages = pendingRouteMessages.get(rrep.getDestinationAddress());
 
             // Send Text Message for each pending message
@@ -293,8 +295,8 @@ public class AodvController implements Runnable {
                 System.out.println();
             }
             if (messageRequests.get(destination).getIsRunning().get()) {
-                System.out.println("I'm inside");
                 messageRequests.get(destination).gotACK();
+                removeMessageRequest(destination);
             }
         }
     }
@@ -305,37 +307,56 @@ public class AodvController implements Runnable {
      * @param userMessage Message to be send
      */
     private void route(UserMessage userMessage) {
-        // If Valid route for destination already present send SEND_TEXT_REQUEST
         byte destination = (byte) userMessage.getDestinationAddress();
-        Route routeToDestination = routingTable.get(userMessage.getDestinationAddress());
+        Route routeToDestination = routingTable.get((int) destination);
+
+        // IF ROUTE EXISTS
+
+        // If VALID route already present
         if (routeToDestination != null && routeToDestination.getValidRoute()) {
             ChatsController.writeToLog("Valid route found in table for " + userMessage.getDestinationAddress() + ", sending Text Req");
             // Create Send Text Request
-            SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST(String.valueOf(routeToDestination.getNextHop()), (byte) config.getAddress(), destination, (byte) 0, userMessage.getData());
+            SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST(String.valueOf(routeToDestination.getNextHop()), (byte) config.getAddress(),
+                    destination, sequenceNumber, userMessage.getData());
             createTextRequest(sendTextRequest, routeToDestination);
             // Put Message in pending Message until ACK is received
             if (!pendingACKMessages.containsKey(sendTextRequest.getDestinationAddress()))
                 pendingACKMessages.put(destination, new LinkedList<>(Collections.singletonList(sendTextRequest)));
             else
                 pendingACKMessages.get(destination).add(sendTextRequest);
-        } else {
-            // If no Valid route known RREQ
-            // Check if RREQ for destination is already created and running
-            if (messageRequests.get(destination) != null && messageRequests.get(destination).getIsRunning().get()) {
-                ChatsController.writeToLog("No valid route found, already waiting for REQ reply.");
-
-                // Put message in pending Route Queue
-                SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST("", (byte) config.getAddress(), destination, (byte) 0, userMessage.getData());
+        }
+        // If INVALID route already present
+        else if (routeToDestination != null && !routeToDestination.getValidRoute()) {
+            ChatsController.writeToLog("Invalid route found in table for " + userMessage.getDestinationAddress() + ", sending Text Req");
+            // Create Send Text Request
+            SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST(String.valueOf(routeToDestination.getNextHop()), (byte) config.getAddress(),
+                    destination, sequenceNumber, userMessage.getData());
+            if (!pendingRouteMessages.containsKey(destination))
+                pendingRouteMessages.put(destination, new LinkedList<>(Collections.singletonList(sendTextRequest)));
+            else
                 pendingRouteMessages.get(destination).add(sendTextRequest);
-            } else {
-                ChatsController.writeToLog("No valid route found, sending RREQ");
-                SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST("", (byte) config.getAddress(), destination, (byte) 0, userMessage.getData());
-                if (!pendingRouteMessages.containsKey(destination))
-                    pendingRouteMessages.put(destination, new LinkedList<>(Collections.singletonList(sendTextRequest)));
-                else
-                    pendingACKMessages.get(destination).add(sendTextRequest);
-                createRouteRequest(new RREQ((byte) 1, (byte) 0, rreqID, (byte) config.getAddress(), sequenceNumber, (byte) userMessage.getDestinationAddress(), (byte) 0));
-            }
+            createRouteRequest(new RREQ((byte) 0, (byte) 0, rreqID, (byte) config.getAddress(), sequenceNumber, (byte) userMessage.getDestinationAddress(),
+                    routeToDestination.getDestinationSequenceNumber()));
+        }
+
+        // IF ROUTE DOES NOT EXIST
+
+        // If no Valid route known and no Message Request to destination running
+        else if (routeToDestination == null && messageRequests.get(destination) == null) {
+            ChatsController.writeToLog("No existing route, no REQ waiting");
+            SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST("", (byte) config.getAddress(), destination, (byte) 0, userMessage.getData());
+            if (!pendingRouteMessages.containsKey(destination))
+                pendingRouteMessages.put(destination, new LinkedList<>(Collections.singletonList(sendTextRequest)));
+            else
+                pendingRouteMessages.get(destination).add(sendTextRequest);
+            createRouteRequest(new RREQ((byte) 1, (byte) 0, rreqID, (byte) config.getAddress(), sequenceNumber, (byte) userMessage.getDestinationAddress(), (byte) 0));
+        }
+        // If no Valid route known and Message Request to destination already running
+        else if (routeToDestination == null && messageRequests.get(destination) != null && messageRequests.get(destination).getIsRunning().get()) {
+            ChatsController.writeToLog("No valid route found, already waiting for REQ reply.");
+            // Put message in pending Route Queue
+            SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST("", (byte) config.getAddress(), destination, (byte) 0, userMessage.getData());
+            pendingRouteMessages.get(destination).add(sendTextRequest);
         }
     }
 
@@ -344,9 +365,19 @@ public class AodvController implements Runnable {
      */
     private void updateTable() {
         routingTable.forEach((key, value) -> {
-            if (value.getLifetime() > 0)
+            if (value.getLifetime() <= (byte) 0)
                 value.setValidRoute(false);
         });
+    }
+
+    /**
+     * Check if a sequence number received is newer
+     *
+     * @param sequenceNumberToCheck received seq number
+     * @return true if newer, else false
+     */
+    private boolean isSeqNew(byte sequenceNumberToCheck) {
+        return ((byte) (sequenceNumberToCheck - this.sequenceNumber)) > 0;
     }
 
     @Override
@@ -374,6 +405,12 @@ public class AodvController implements Runnable {
                     } else {
                         // Depending on Type of Message do stuff
                         switch (message.getTYPE()) {
+                            case Type.RREQ:
+                                RREQ rreq = (RREQ) message;
+                                if (rreq.getOriginAddress() == config.getAddress())
+                                    return;
+                                handleRouteRequest(rreq);
+                                break;
                             case Type.RREP:
                                 RREP rrep = (RREP) message;
                                 handleRouteReply(rrep);
@@ -394,18 +431,12 @@ public class AodvController implements Runnable {
                                 RERR rerr = (RERR) message;
                                 handleRouteError(rerr);
                                 break;
-                            case Type.RREQ:
-                                RREQ rreq = (RREQ) message;
-                                if (rreq.getOriginAddress() == config.getAddress())
-                                    return;
-                                handleRouteRequest(rreq);
-                                break;
                             case Type.SEND_HOP_ACK:
                                 SEND_HOP_ACK sendHopAck = (SEND_HOP_ACK) message;
                                 handleHopACK(sendHopAck);
                                 break;
                         }
-                        ChatsController.writeToLog(message.toString());
+                        ChatsController.writeToLog(message.toString(), Color.YELLOW);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -570,5 +601,9 @@ public class AodvController implements Runnable {
 
     public HashMap<Integer, Route> getRoutingTable() {
         return routingTable;
+    }
+
+    public void removeMessageRequest(byte destination) {
+        messageRequests.remove(destination);
     }
 }
