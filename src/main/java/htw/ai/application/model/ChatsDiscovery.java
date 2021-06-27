@@ -40,7 +40,6 @@ public class ChatsDiscovery {
         } else {
             // Client Message
             if (!discoveryList.contains(message.getSourceAddress())) {
-                ChatsController.writeToLog("New Client discovered " + message.getSourceAddress());
                 discoveryList.add(message.getSourceAddress());
                 newClient.set(message.getSourceAddress());
                 chats.addChat(message.getSourceAddress(), message, true);

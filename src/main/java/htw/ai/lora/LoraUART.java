@@ -151,7 +151,7 @@ public class LoraUART implements Runnable {
 
             // Unknown messages
             else {
-                ChatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);
+                //ChatsController.writeToLog("Unknown data read: " + data, Color.DARKRED);
                 try {
                     unknownQueue.put(data);
                 } catch (InterruptedException e) {

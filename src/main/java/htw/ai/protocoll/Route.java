@@ -52,6 +52,8 @@ public class Route {
     }
 
     public boolean getValidRoute() {
+        if (lifetime < 0)
+            this.validRoute = false;
         return validRoute;
     }
 

@@ -6,6 +6,7 @@ import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.Message;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.scene.paint.Color;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -116,9 +117,7 @@ public class LoraController implements Runnable {
                     // If no AT command -> AT+SEND
                     if (messageBytes != null) {
                         // Logging
-                        System.out.print("\033[1;36m");
-                        System.out.println(message);
-                        System.out.print("\033[0m");
+                        ChatsController.writeToLog(message.toString(), Color.CYAN);
 
                         // Get number of bytes to send
                         int bytesToSend = messageBytes.length;
@@ -128,7 +127,7 @@ public class LoraController implements Runnable {
                                 setAtDestAddr(message.getDestination());
                             writeQueue.put(Lora.AT_SEND.CODE + bytesToSend);
                             // Check reply code
-                            replyCode = Lora.valueOfCode(replyQueue.take());
+                            replyCode = Lora.valueOfCode(replyQueue.poll(800, TimeUnit.MILLISECONDS));
                             checkReplyCode(replyCode, Lora.REPLY_OK);
                             payloadQueue.put(messageBytes);
                             loraState = LoraState.SENDING;
@@ -184,7 +183,7 @@ public class LoraController implements Runnable {
 
                     if (!equal)
                         //ChatsController.writeToLog("Unexpected reply: AT,SENDED expected.");
-                    loraState = LoraState.USER_INPUT;
+                        loraState = LoraState.USER_INPUT;
                     break;
             }
         }
@@ -211,6 +210,7 @@ public class LoraController implements Runnable {
             setAtDestAddr("FFFF");
             // Set Sending mode
             setAtRX();
+            ChatsController.writeToLog("READY", Color.DARKRED);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -265,6 +265,7 @@ public class LoraController implements Runnable {
      */
     private void atConfig() throws InterruptedException {
         String setCfg = Lora.AT_CFG.CODE + config.getConfiguration();
+        ChatsController.writeToLog(setCfg, Color.DARKRED);
         writeQueue.put(setCfg);
         checkReplyCode(Lora.valueOfCode(replyQueue.take()), Lora.REPLY_OK);
     }
@@ -287,6 +288,7 @@ public class LoraController implements Runnable {
      */
     private synchronized void setAtDestAddr(String destination) throws InterruptedException {
         String setDestinationAddr = Lora.AT_DEST.CODE + destination;
+        ChatsController.writeToLog(setDestinationAddr, Color.DARKRED);
         writeQueue.put(setDestinationAddr);
         replyQueue.poll(200, TimeUnit.MILLISECONDS);
         unknownQueue.clear();

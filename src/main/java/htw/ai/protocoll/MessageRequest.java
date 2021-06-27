@@ -31,6 +31,7 @@ public class MessageRequest implements Runnable {
         while (isRunning.get() && !gotReply.get()) {
             try {
                 int DELAY_IN_SECONDS = 5;
+                int RREQ_DELAY_IN_SECONDS = 30;
                 for (int tries = 1; tries <= MAX_TRIES; tries++) {
                     if (gotReply.get()) {
                         return;
@@ -45,20 +46,33 @@ public class MessageRequest implements Runnable {
                         }
                         this.destination = rreq.getDestinationAddress();
                         aodvController.getMessagesQueue().put(rreq);
+
+                        try {
+                            Thread.sleep(RREQ_DELAY_IN_SECONDS * 1000);
+                        } catch (InterruptedException e) {
+                            // Ignore
+                        }
                     } else if (message.getTYPE() == Type.RREP){
                         RREP rrep = (RREP) message;
                         this.destination = rrep.getDestinationAddress();
                         aodvController.getMessagesQueue().put(rrep);
+
+                        try {
+                            Thread.sleep(DELAY_IN_SECONDS * 1000);
+                        } catch (InterruptedException e) {
+                            // Ignore
+                        }
                     } else if (message.getTYPE() == Type.SEND_TEXT_REQUEST) {
                         SEND_TEXT_REQUEST sendTextRequest = (SEND_TEXT_REQUEST) message;
                         this.destination = sendTextRequest.getDestinationAddress();
+                        sendTextRequest.setMessageSequenceNumber(aodvController.incrementMessageId());
                         aodvController.getMessagesQueue().put(sendTextRequest);
-                    }
 
-                    try {
-                        Thread.sleep(DELAY_IN_SECONDS * 1000);
-                    } catch (InterruptedException e) {
-                        // Ignore
+                        try {
+                            Thread.sleep(DELAY_IN_SECONDS * 1000);
+                        } catch (InterruptedException e) {
+                            // Ignore
+                        }
                     }
                 }
                 this.gotReply.set(true);
