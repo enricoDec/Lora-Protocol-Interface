@@ -1,7 +1,6 @@
 package htw.ai.protocoll;
 
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
-import htw.ai.application.controller.ChatsController;
 import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.application.model.ClientMessage;
 import htw.ai.application.model.UserMessage;

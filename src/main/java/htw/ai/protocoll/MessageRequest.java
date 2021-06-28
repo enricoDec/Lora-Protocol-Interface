@@ -1,6 +1,5 @@
 package htw.ai.protocoll;
 
-import htw.ai.application.controller.ChatsController;
 import htw.ai.lora.Log;
 import htw.ai.lora.Logger;
 import htw.ai.protocoll.message.*;
