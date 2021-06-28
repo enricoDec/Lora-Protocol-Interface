@@ -34,6 +34,8 @@ public class LoraUART implements Runnable {
     private BlockingQueue<String> unknownQueue = new ArrayBlockingQueue<>(20);
     // contains received messages from other lora modules
     private BlockingQueue<byte[]> lrQueue = new ArrayBlockingQueue<>(20);
+    // Logger
+    private Logger logger = Logger.getInstance();
 
     LoraUART(Config config, ChatsDiscovery chatsDiscovery) throws SerialPortInvalidPortException {
         comPort = SerialPort.getCommPort(config.getPort());
@@ -54,13 +56,13 @@ public class LoraUART implements Runnable {
      */
     boolean initialize() {
         if (running.get())
-            ChatsController.writeToLog("LoraUART already running!");
+            logger.addToLog(new Log(Color.DARKRED, "LoraUART already running!"));
         else {
             running.set(true);
             comPort.openPort();
             if (!comPort.openPort()) {
-                ChatsController.writeToLog("Could not open port " + config.getPort() + " !", Color.DARKRED);
-                ChatsController.writeToLog("Wrong port or blocked by other process.", Color.DARKRED);
+                logger.addToLog(new Log(Color.DARKRED, "Could not open port " + config.getPort() + " !"));
+                logger.addToLog(new Log(Color.DARKRED, "Wrong port or blocked by other process."));
                 return false;
             }
         }
@@ -72,7 +74,7 @@ public class LoraUART implements Runnable {
      */
     void stop() {
         if (!running.get())
-            ChatsController.writeToLog("LoraUART already stopped!");
+            logger.addToLog(new Log(Color.DARKRED, "LoraUART already stopped!"));
         else {
             running.set(false);
             comPort.closePort();

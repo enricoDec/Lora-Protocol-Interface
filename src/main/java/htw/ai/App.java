@@ -6,6 +6,7 @@ package htw.ai;
  * @since : 26-05-2021
  **/
 
+import htw.ai.lora.Logger;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -21,6 +22,10 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        Logger logger = Logger.getInstance();
+        Thread loggerThread = new Thread(logger, "Logger Thread");
+        loggerThread.start();
+
         scene = new Scene(loadFXML(base + "/chats"));
         scene.getStylesheets().add(getClass().getResource(base + "/css/chats.css").toExternalForm());
         stage.setScene(scene);

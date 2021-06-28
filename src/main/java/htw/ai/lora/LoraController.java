@@ -42,6 +42,8 @@ public class LoraController implements Runnable {
     // Queue containing any other data (Not AT or LR)
     private BlockingQueue<String> unknownQueue;
     private AtomicBoolean isRunning = new AtomicBoolean(false);
+    // Logger
+    private Logger logger = Logger.getInstance();
 
     public LoraController(Config config, ChatsDiscovery chatsDiscovery, BlockingQueue<Message> messagesQueue) throws SerialPortInvalidPortException {
         this.config = config;
@@ -59,7 +61,7 @@ public class LoraController implements Runnable {
      */
     public boolean initialize() {
         if (isRunning.get())
-            ChatsController.writeToLog("Controller already running!");
+            logger.addToLog(new Log(Color.DARKRED, "Controller already running!"));
         else {
             isRunning.set(true);
             loraUART_thread = new Thread(loraUART, "loraUART_thread");
@@ -75,12 +77,12 @@ public class LoraController implements Runnable {
      */
     public void stop() {
         if (!isRunning.get())
-            ChatsController.writeToLog("Controller already stopped!");
+            logger.addToLog(new Log(Color.DARKRED, "Controller already stopped!"));
         else {
             loraUART.stop();
             try {
                 loraUART_thread.join();
-                ChatsController.writeToLog("UART Thread ended");
+                logger.addToLog(new Log(Color.DARKRED, "UART Thread ended"));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -116,8 +118,8 @@ public class LoraController implements Runnable {
                     }
                     // If no AT command -> AT+SEND
                     if (messageBytes != null) {
-                        // Logging
-                        ChatsController.writeToLog("[" + config.getAddress() + "]" + message.toString(), Color.CYAN);
+                        // Logging Own Messages
+                        logger.addToLog(new Log(Color.CYAN, "[" + config.getAddress() + "]" + message.toString()));
 
                         // Get number of bytes to send
                         int bytesToSend = messageBytes.length;
@@ -135,7 +137,7 @@ public class LoraController implements Runnable {
                             e.printStackTrace();
                         }
                     } else {
-                        ChatsController.writeToLog("Message ignored, bad Type or malformed.");
+                        logger.addToLog(new Log(null, "Message ignored, bad Type or malformed."));
                         loraState = LoraState.USER_INPUT;
                     }
                     break;
@@ -149,7 +151,7 @@ public class LoraController implements Runnable {
                     }
 
                     if (replyCode.CODE.startsWith(Lora.ERR_GENERAL.CODE)) {
-                        ChatsController.writeToLog("Error " + replyCode.CODE);
+                        logger.addToLog(new Log(null, "Error " + replyCode.CODE));
                     }
                     loraState = LoraState.USER_INPUT;
                     break;
@@ -210,7 +212,7 @@ public class LoraController implements Runnable {
             setAtDestAddr("FFFF");
             // Set Sending mode
             setAtRX();
-            ChatsController.writeToLog("READY", Color.DARKRED);
+            logger.addToLog(new Log(Color.DARKRED, "READY"));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -265,7 +267,7 @@ public class LoraController implements Runnable {
      */
     private void atConfig() throws InterruptedException {
         String setCfg = Lora.AT_CFG.CODE + config.getConfiguration();
-        ChatsController.writeToLog(setCfg, Color.DARKRED);
+        logger.addToLog(new Log(Color.DARKRED, setCfg));
         writeQueue.put(setCfg);
         checkReplyCode(Lora.valueOfCode(replyQueue.take()), Lora.REPLY_OK);
     }
@@ -288,7 +290,7 @@ public class LoraController implements Runnable {
      */
     private synchronized void setAtDestAddr(String destination) throws InterruptedException {
         String setDestinationAddr = Lora.AT_DEST.CODE + destination;
-        ChatsController.writeToLog(setDestinationAddr, Color.DARKRED);
+        logger.addToLog(new Log(Color.DARKRED, setDestinationAddr));
         writeQueue.put(setDestinationAddr);
         replyQueue.poll(200, TimeUnit.MILLISECONDS);
         unknownQueue.clear();
@@ -306,7 +308,7 @@ public class LoraController implements Runnable {
      * @param numOfBytes number of bytes to send
      */
     private void sendRandomData(int numOfBytes) {
-        ChatsController.writeToLog("Sending " + numOfBytes + " bytes of random data");
+        logger.addToLog(new Log(Color.DARKRED, "LORA IS MOST LIKELY WAITING FOR DATA AFTER AT+SEND. SENDING RANDOM DATA..."));
         byte[] array = new byte[numOfBytes];
         new Random().nextBytes(array);
         String generatedString = new String(array, StandardCharsets.US_ASCII);

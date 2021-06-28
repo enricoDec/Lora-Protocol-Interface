@@ -8,6 +8,8 @@ import htw.ai.application.model.Chats;
 import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.application.model.ClientMessage;
 import htw.ai.application.model.UserMessage;
+import htw.ai.lora.Log;
+import htw.ai.lora.Logger;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.AodvController;
 import javafx.animation.Animation;
@@ -69,6 +71,8 @@ public class ChatsController {
     public static AodvController aodvController;
     // AODV Thread
     private Thread aodv_thread;
+    // Logger
+    private Logger logger = Logger.getInstance();
 
     @FXML
     JFXButton btnChat;
@@ -116,8 +120,7 @@ public class ChatsController {
         // Read Config
         try {
             CONFIG.readConfig();
-            writeToLog("Config read successfully.");
-            writeToLog(CONFIG.toString());
+            logger.addToLog(new Log(Color.DARKRED, "Config read successfully."));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -245,7 +248,7 @@ public class ChatsController {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            writeToLog("AODV Controller Thread ended");
+            logger.addToLog(new Log(Color.DARKRED, "ODV Controller Thread ended!"));
             currentChat = -1;
             messageBox.getChildren().clear();
             chatList.getChildren().clear();
@@ -463,32 +466,6 @@ public class ChatsController {
         gridPane.add(fontIcon, 0, 0);
 
         slowScrollToBottom(chatScrollPane);
-    }
-
-    /**
-     * Write something to the Log (currently system.out)
-     *
-     * @param message message
-     * @param color   color (Currently DARKRED, CYAN or YELLOW will work)
-     */
-    public static void writeToLog(String message, Color color) {
-        if (color == Color.DARKRED)
-            System.out.print("\033[1;31m");
-        else if (color == Color.CYAN)
-            System.out.print("\033[1;36m");
-        else if (color == Color.YELLOW)
-            System.out.print("\033[1;33m");
-        System.out.println(message);
-        System.out.print("\033[0m");
-    }
-
-    /**
-     * Write something to the Log (currently system.out)
-     *
-     * @param message message
-     */
-    public static void writeToLog(String message) {
-        System.out.println(message);
     }
 
     /**

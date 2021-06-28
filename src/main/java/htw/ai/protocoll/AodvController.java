@@ -5,6 +5,8 @@ import htw.ai.application.controller.ChatsController;
 import htw.ai.application.model.ChatsDiscovery;
 import htw.ai.application.model.ClientMessage;
 import htw.ai.application.model.UserMessage;
+import htw.ai.lora.Log;
+import htw.ai.lora.Logger;
 import htw.ai.lora.LoraController;
 import htw.ai.lora.config.Config;
 import htw.ai.protocoll.message.*;
@@ -50,6 +52,8 @@ public class AodvController implements Runnable {
     private HashMap<Byte, LinkedList<Message>> pendingRouteMessages = new HashMap<>();
     // List of all messages send and pending for ack
     private HashMap<Byte, LinkedList<Message>> pendingACKMessages = new HashMap<>();
+    // Logger
+    private Logger logger = Logger.getInstance();
 
     private LoraController loraController;
     private Config config;
@@ -356,7 +360,7 @@ public class AodvController implements Runnable {
 
         // If VALID route already present
         if (routeToDestination != null && routeToDestination.getValidRoute()) {
-            ChatsController.writeToLog("Valid route found in table for " + userMessage.getDestinationAddress() + ", sending Text Req");
+            logger.addToLog(new Log(null, "Valid route found in table for " + userMessage.getDestinationAddress() + ", sending pending Text Req"));
             // Create Send Text Request
             SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST(String.valueOf(routeToDestination.getNextHop()), (byte) config.getAddress(),
                     destination, sequenceNumber, userMessage.getData());
@@ -369,7 +373,7 @@ public class AodvController implements Runnable {
         }
         // If INVALID route already present
         else if (routeToDestination != null && !routeToDestination.getValidRoute()) {
-            ChatsController.writeToLog("Invalid route found in table for " + userMessage.getDestinationAddress() + ", sending Text Req");
+            logger.addToLog(new Log(null, "Invalid route found in table for " + userMessage.getDestinationAddress() + ", sending Text Req"));
             // Create Send Text Request
             SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST(String.valueOf(routeToDestination.getNextHop()), (byte) config.getAddress(),
                     destination, sequenceNumber, userMessage.getData());
@@ -385,7 +389,7 @@ public class AodvController implements Runnable {
 
         // If no Valid route known and no Message Request to destination running
         else if (routeToDestination == null && messageRequests.get(destination) == null) {
-            ChatsController.writeToLog("No existing route, no REQ waiting");
+            logger.addToLog(new Log(null, "No existing route, no REQ waiting"));
             SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST("", (byte) config.getAddress(), destination, (byte) 0, userMessage.getData());
             if (!pendingRouteMessages.containsKey(destination))
                 pendingRouteMessages.put(destination, new LinkedList<>(Collections.singletonList(sendTextRequest)));
@@ -395,7 +399,7 @@ public class AodvController implements Runnable {
         }
         // If no Valid route known and Message Request to destination already running
         else if (routeToDestination == null && messageRequests.get(destination) != null && messageRequests.get(destination).getIsRunning().get()) {
-            ChatsController.writeToLog("No valid route found, already waiting for REQ reply.");
+            logger.addToLog(new Log(null, "No valid route found, already waiting for REQ reply."));
             // Put message in pending Route Queue
             SEND_TEXT_REQUEST sendTextRequest = new SEND_TEXT_REQUEST("", (byte) config.getAddress(), destination, (byte) 0, userMessage.getData());
             pendingRouteMessages.get(destination).add(sendTextRequest);
@@ -430,7 +434,7 @@ public class AodvController implements Runnable {
                 UserMessage userMessage;
                 try {
                     userMessage = userMessagesQueue.take();
-                    ChatsController.writeToLog("User want to send a Message, routing...");
+                    logger.addToLog(new Log(null, "User want to send a Message, routing..."));
                     route(userMessage);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -478,7 +482,7 @@ public class AodvController implements Runnable {
                                 break;
                         }
                         // Incoming Messages
-                        ChatsController.writeToLog("[" + Byte.toUnsignedInt(message.getPrevHop()) + "]" + message.toString(), Color.YELLOW);
+                        logger.addToLog(new Log(Color.YELLOW, "[" + Byte.toUnsignedInt(message.getPrevHop()) + "]" + message.toString()));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -613,7 +617,7 @@ public class AodvController implements Runnable {
                 try {
                     lora_thread.join(2000);
                     lora_thread.interrupt();
-                    ChatsController.writeToLog("Lora Controller ended");
+                    logger.addToLog(new Log(Color.DARKRED, "Lora Controller ended"));
                     // Stop all route Requests threads that are still running
                     AtomicInteger i = new AtomicInteger();
 
@@ -624,7 +628,7 @@ public class AodvController implements Runnable {
                             i.getAndIncrement();
                         }
                     });
-                    ChatsController.writeToLog(i.get() + " Message Request Thread(s) were interrupted.");
+                    logger.addToLog(new Log(Color.DARKRED, i.get() + " Message Request Thread(s) were interrupted."));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
