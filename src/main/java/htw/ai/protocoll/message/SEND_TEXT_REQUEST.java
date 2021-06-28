@@ -66,9 +66,9 @@ public class SEND_TEXT_REQUEST extends Message {
 
     @Override
     public String toString() {
-        return "SEND TEXT REQUEST{" + "Origin Address: " + Byte.toUnsignedInt(originAddress) +
-                ", Destination Address: " + Byte.toUnsignedInt(destinationAddress) +
-                ", Message Sequence Number: " + Byte.toUnsignedInt(messageSequenceNumber) +
+        return "SEND TEXT REQUEST{" + "Origin Addr: " + Byte.toUnsignedInt(originAddress) +
+                ", Dest Addr: " + Byte.toUnsignedInt(destinationAddress) +
+                ", Message Seq: " + Byte.toUnsignedInt(messageSequenceNumber) +
                 ", Payload: '" + payload + '\'' +
                 '}';
     }

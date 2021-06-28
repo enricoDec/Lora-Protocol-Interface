@@ -2,6 +2,7 @@ package htw.ai.protocoll;
 
 import htw.ai.application.controller.ChatsController;
 import htw.ai.protocoll.message.*;
+import javafx.scene.paint.Color;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,7 +37,6 @@ public class MessageRequest implements Runnable {
                     if (gotReply.get()) {
                         return;
                     }
-                    ChatsController.writeToLog("Sending Message trie(s): " + tries);
                     // Increase Seq Number
                     if (message.getTYPE() == Type.RREQ) {
                         RREQ rreq = (RREQ) message;
@@ -46,6 +46,7 @@ public class MessageRequest implements Runnable {
                         }
                         this.destination = rreq.getDestinationAddress();
                         aodvController.getMessagesQueue().put(rreq);
+                        ChatsController.writeToLog("REQ try: " + tries);
 
                         try {
                             Thread.sleep(RREQ_DELAY_IN_SECONDS * 1000);
@@ -56,7 +57,7 @@ public class MessageRequest implements Runnable {
                         RREP rrep = (RREP) message;
                         this.destination = rrep.getDestinationAddress();
                         aodvController.getMessagesQueue().put(rrep);
-
+                        ChatsController.writeToLog("RREP try: " + tries);
                         try {
                             Thread.sleep(DELAY_IN_SECONDS * 1000);
                         } catch (InterruptedException e) {
@@ -67,6 +68,7 @@ public class MessageRequest implements Runnable {
                         this.destination = sendTextRequest.getDestinationAddress();
                         sendTextRequest.setMessageSequenceNumber(aodvController.incrementMessageId());
                         aodvController.getMessagesQueue().put(sendTextRequest);
+                        ChatsController.writeToLog("SEND TEXT try: " + tries);
 
                         try {
                             Thread.sleep(DELAY_IN_SECONDS * 1000);
@@ -77,6 +79,7 @@ public class MessageRequest implements Runnable {
                 }
                 this.gotReply.set(true);
                 this.isRunning.set(false);
+                ChatsController.writeToLog("No Reply", Color.DARKRED);
                 if (destination != 0)
                     aodvController.removeMessageRequest(destination);
                 return;

@@ -101,11 +101,11 @@ public class RREQ extends Message {
     @Override
     public String toString() {
         return "RREQ{" + "uFlag: " + uFlag +
-                ", Hop Count: " + Byte.toUnsignedInt(hopCount) +
-                ", Origin Address: " + Byte.toUnsignedInt(originAddress) +
-                ", Origin Sequence Number: " + Byte.toUnsignedInt(originSequenceNumber) +
-                ", Destination Address: " + Byte.toUnsignedInt(destinationAddress) +
-                ", Destination Sequence Number: " + Byte.toUnsignedInt(destinationSequenceNumber) +
+                ", Hops: " + Byte.toUnsignedInt(hopCount) +
+                ", Origin Addr: " + Byte.toUnsignedInt(originAddress) +
+                ", Origin Seq: " + Byte.toUnsignedInt(originSequenceNumber) +
+                ", Dest Addr: " + Byte.toUnsignedInt(destinationAddress) +
+                ", Dest Seq: " + Byte.toUnsignedInt(destinationSequenceNumber) +
                 ", RREQ ID=" + Byte.toUnsignedInt(rreqID) +
                 '}';
     }

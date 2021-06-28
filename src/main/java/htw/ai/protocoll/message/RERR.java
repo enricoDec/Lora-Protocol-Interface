@@ -84,11 +84,11 @@ public class RERR extends Message {
 
     @Override
     public String toString() {
-        return "RERR{" + "Destination Count: " + Byte.toUnsignedInt(destinationCount) +
-                ", Unreachable Destination Address: " + Byte.toUnsignedInt(unreachableDestinationAddress) +
-                ", Unreachable Destination Sequence Number: " + Byte.toUnsignedInt(unreachableDestinationSequenceNumber) +
-                ", Additional Addresses: " + additionalAddresses +
-                ", Additional Sequence Number: " + additionalSequenceNumber +
+        return "RERR{" + "Dest Count: " + Byte.toUnsignedInt(destinationCount) +
+                ", Unr Dest Addr: " + Byte.toUnsignedInt(unreachableDestinationAddress) +
+                ", Unr Dest Seq: " + Byte.toUnsignedInt(unreachableDestinationSequenceNumber) +
+                ", Add Addr: " + additionalAddresses +
+                ", Add Seq: " + additionalSequenceNumber +
                 '}';
     }
 }

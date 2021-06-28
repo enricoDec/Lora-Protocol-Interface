@@ -49,9 +49,9 @@ public class SEND_TEXT_REQUEST_ACK extends Message {
 
     @Override
     public String toString() {
-        return "SEND TEXT REQUEST ACK{" + "Origin Address: " + Byte.toUnsignedInt(originAddress) +
-                ", Destination Address: " + Byte.toUnsignedInt(destinationAddress) +
-                ", Message Sequence Number: " + Byte.toUnsignedInt(messageSequenceNumber) +
+        return "SEND TEXT REQUEST ACK{" + "Origin Addr: " + Byte.toUnsignedInt(originAddress) +
+                ", Dest Addr: " + Byte.toUnsignedInt(destinationAddress) +
+                ", Message Seq: " + Byte.toUnsignedInt(messageSequenceNumber) +
                 '}';
     }
 }
