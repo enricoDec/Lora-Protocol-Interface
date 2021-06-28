@@ -477,7 +477,8 @@ public class AodvController implements Runnable {
                                 handleHopACK(sendHopAck);
                                 break;
                         }
-                        ChatsController.writeToLog(message.toString(), Color.YELLOW);
+                        // Incoming Messages
+                        ChatsController.writeToLog("[" + Byte.toUnsignedInt(message.getPrevHop()) + "]" + message.toString(), Color.YELLOW);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();

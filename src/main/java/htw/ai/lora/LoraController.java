@@ -117,7 +117,7 @@ public class LoraController implements Runnable {
                     // If no AT command -> AT+SEND
                     if (messageBytes != null) {
                         // Logging
-                        ChatsController.writeToLog(message.toString(), Color.CYAN);
+                        ChatsController.writeToLog("[" + config.getAddress() + "]" + message.toString(), Color.CYAN);
 
                         // Get number of bytes to send
                         int bytesToSend = messageBytes.length;

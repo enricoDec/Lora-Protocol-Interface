@@ -1,6 +1,5 @@
 package htw.ai.application.model;
 
-import htw.ai.application.controller.ChatsController;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 

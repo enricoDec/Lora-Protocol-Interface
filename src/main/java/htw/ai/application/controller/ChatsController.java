@@ -503,8 +503,4 @@ public class ChatsController {
                         new KeyValue(scrollPane.vvalueProperty(), 1)));
         animation.play();
     }
-
-    public AodvController getAodvController() {
-        return aodvController;
-    }
 }
