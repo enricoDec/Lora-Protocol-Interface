@@ -274,7 +274,7 @@ public class AodvController implements Runnable {
             createHopACK(new SEND_HOP_ACK(String.valueOf(sendTextRequest.getPrevHop()), sendTextRequest.getMessageSequenceNumber()));
             Route destination = routingTable.get((int) sendTextRequest.getDestinationAddress());
             Route origin = routingTable.get((int) sendTextRequest.getOriginAddress());
-            if (destination != null) {
+            if (destination != null && origin != null) {
                 destination.setLifetime(System.currentTimeMillis());
                 createTextRequest(new SEND_TEXT_REQUEST(String.valueOf(destination.getNextHop()), sendTextRequest.getOriginAddress(),
                         sendTextRequest.getDestinationAddress(),
