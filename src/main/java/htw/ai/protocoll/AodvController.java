@@ -132,7 +132,7 @@ public class AodvController implements Runnable {
             createRouteRequest(rreq);
         } else {
             // If RREQ destination is me reply with RREP
-            createRouteReply(new RREP(String.valueOf(rreq.getPrevHop()), (byte) (rreq.getHopCount() + 1), rreq.getOriginAddress(), rreq.getDestinationAddress(), sequenceNumber, (byte) 180));
+            createRouteReply(new RREP(String.valueOf(rreq.getPrevHop()), rreq.getHopCount(), rreq.getOriginAddress(), rreq.getDestinationAddress(), sequenceNumber, (byte) 180));
         }
     }
 
