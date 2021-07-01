@@ -56,4 +56,8 @@ public class Logger implements Runnable {
             }
         }
     }
+
+    public void stop(){
+        isRunning.set(false);
+    }
 }

@@ -35,6 +35,7 @@ public class App extends Application {
         Image icon = new Image(getClass().getResource("icon.png").toExternalForm());
         stage.getIcons().add(icon);
         stage.show();
+        logger.stop();
     }
 
     public static void setRoot(String fxml) throws IOException {
