@@ -24,7 +24,7 @@ public class LoraUART implements Runnable {
     private final ChatsDiscovery chatsDiscovery;
     private final SerialPort comPort;
     // message Queue contains payload (e.g. after AT+SEND=x)
-    private BlockingQueue<byte[]> messageQueue = new ArrayBlockingQueue<>(20);
+    private BlockingQueue<byte[]> payloadQueue = new ArrayBlockingQueue<>(20);
     // writeQueue contains AT Commands (e.g. AT+CMD)
     private BlockingQueue<String> commandQueue = new ArrayBlockingQueue<>(20);
     // contains reply codes from lora (e.g. AT,OK)
@@ -94,9 +94,9 @@ public class LoraUART implements Runnable {
                     e.printStackTrace();
                 }
             }
-            if (!messageQueue.isEmpty()) {
+            if (!payloadQueue.isEmpty()) {
                 try {
-                    write(messageQueue.take());
+                    write(payloadQueue.take());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -203,8 +203,8 @@ public class LoraUART implements Runnable {
      *
      * @return reference to the write queue
      */
-    public BlockingQueue<byte[]> getMessageQueue() {
-        return messageQueue;
+    public BlockingQueue<byte[]> getPayloadQueue() {
+        return payloadQueue;
     }
 
     /**

@@ -16,10 +16,6 @@ public enum LoraState {
      */
     USER_INPUT,
     /**
-     * Wait for lora reply code
-     */
-    WAIT_REPLY,
-    /**
      * Waiting for lora reply code AT,SENDING
      */
     SENDING,
