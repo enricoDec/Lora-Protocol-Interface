@@ -1,6 +1,6 @@
 # Lora-Protocol-Interface
 This project implements a custom version of the [AODV](https://datatracker.ietf.org/doc/html/rfc3561) Protocol. It's much simpler and not complete.   
-This programm should run on a machine connected via Serial Port to a LORA Module and implements an Ad-Hoc Multi-Hop-Routing Protocol with a graphical Interface. Furthermore this programm is able to discover other Nodes, send and receive messages.
+This programm should run on a machine connected via Serial Port to a LORA Module. It implements an Ad-Hoc Multi-Hop-Routing Protocol with a graphical Interface. Furthermore this programm is able to discover other Nodes, send and receive messages.
 
 ## Protocol
 **All AODV steps are implemented besides:**  
